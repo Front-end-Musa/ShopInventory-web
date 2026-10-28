@@ -1,10 +1,11 @@
 import { createAction, props } from '@ngrx/store';
-import { CreateProductRequest, Product } from '../data-access/products.models';
+import { ProductRequestDto, Product, ProductsResponse } from '../data-access/products.models';
+import { SortByType, SortOrderType } from '../data-access/products-sorting.types';
 
-export const loadProducts = createAction('[Products/API] Load Products');
+export const loadProducts = createAction('[Products/API] Load Products', props<{ page: number, pageSize: number, sortBy?: SortByType, sortOrder?: SortOrderType }>());
 export const loadProductsSuccess = createAction(
   '[Products/API] Load Products Success',
-  props<{ products: Product[] }>(),
+  props<{ response: ProductsResponse }>(),
 );
 export const loadProductsFailure = createAction(
   '[Products/API] Load Products Failure',
@@ -26,7 +27,7 @@ export const loadProductByIdFailure = createAction(
 
 export const createProduct = createAction(
   '[Products/API] Create Product',
-  props<{ request: CreateProductRequest }>(),
+  props<{ request: ProductRequestDto }>(),
 );
 export const createProductSuccess = createAction(
   '[Products/API] Create Product Success',

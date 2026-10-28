@@ -7,29 +7,16 @@
   </a>
 
   <nav class="primary-nav" aria-label="Main menu">
-    <a
-      class="nav-link"
-      routerLink="/"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      <span class="nav-icon" aria-hidden="true">⌂</span><span>Dashboard</span>
-    </a>
-    <a class="nav-link" routerLink="/products" routerLinkActive="active">
-      <span class="nav-icon" aria-hidden="true">⬡</span><span>Products</span>
-    </a>
-    <a class="nav-link" routerLink="/categories" routerLinkActive="active">
-      <span class="nav-icon" aria-hidden="true">▦</span><span>Categories</span>
-    </a>
-    <a class="nav-link" routerLink="/stock" routerLinkActive="active">
-      <span class="nav-icon" aria-hidden="true">▱</span><span>Stock</span>
-    </a>
-    <a class="nav-link" routerLink="/sales" routerLinkActive="active">
-      <span class="nav-icon" aria-hidden="true">⌁</span><span>Sales</span>
-    </a>
-    <a class="nav-link" routerLink="/reports" routerLinkActive="active">
-      <span class="nav-icon" aria-hidden="true">▤</span><span>Reports</span>
-    </a>
+    @for (section of sidebarSections; track $index) {
+      <a
+        class="nav-link"
+        [routerLink]="section.link"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span class="nav-icon" aria-hidden="true"><mat-icon>{{ section.icon }}</mat-icon></span><span>{{ section.title }}</span>
+      </a>
+    }
   </nav>
 
   <a class="settings-link" routerLink="/settings" routerLinkActive="active">

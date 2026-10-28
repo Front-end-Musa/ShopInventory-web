@@ -1,3 +1,5 @@
+import { Category } from "../../category/data-access/category.models";
+
 export interface Product {
   id: number;
   name: string;
@@ -7,12 +9,20 @@ export interface Product {
   price: number;
   costPrice: number;
   categoryId: number;
-  category: string;
+  category: Category;
   quantityInStock: number;
-  minimumStock: number;
+  minimumStockLevel: number;
 }
 
-export interface CreateProductRequest {
+export interface ProductsResponse {
+  products: Product[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ProductRequestDto {
   name: string;
   sku: string;
   barcode?: string | null;
@@ -21,5 +31,5 @@ export interface CreateProductRequest {
   costPrice: number;
   categoryId: number;
   quantityInStock: number;
-  minimumStock: number;
+  minimumStockLevel: number;
 }

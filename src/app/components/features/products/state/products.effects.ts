@@ -13,9 +13,9 @@ export class ProductsEffects {
   loadProducts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ProductsActions.loadProducts),
-      switchMap(() =>
-        this.productsService.getAll().pipe(
-          map((products) => ProductsActions.loadProductsSuccess({ products })),
+      switchMap(({ page, pageSize, sortBy, sortOrder }) =>
+        this.productsService.getAll(page, pageSize, sortBy, sortOrder).pipe(
+          map((response) => ProductsActions.loadProductsSuccess({ response })),
           catchError((error: unknown) => of(ProductsActions.loadProductsFailure({ error }))),
         ),
       ),

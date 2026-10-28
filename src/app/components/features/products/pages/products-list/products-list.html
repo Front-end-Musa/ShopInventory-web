@@ -16,14 +16,14 @@
       <span class="summary-icon mint" aria-hidden="true">▦</span>
       <div>
         <p>Total products</p>
-        <strong>124</strong><span class="summary-note">Across 8 categories</span>
+        <strong>{{ totalCount() }}</strong><span class="summary-note">Across N categories</span>
       </div>
     </article>
     <article class="summary-card">
       <span class="summary-icon violet" aria-hidden="true">▤</span>
       <div>
         <p>Stock value</p>
-        <strong>৳ 1,248,650</strong
+        <strong>{{ stockValue() }}</strong
         ><span class="summary-note positive">↑ 12% <span>vs. last month</span></span>
       </div>
     </article>
@@ -31,14 +31,14 @@
       <span class="summary-icon amber" aria-hidden="true">◈</span>
       <div>
         <p>Low stock</p>
-        <strong>7 items</strong><span class="summary-note warning">Needs attention</span>
+        <strong>{{ lowStockIds().length }}</strong><span class="summary-note warning">Needs attention</span>
       </div>
     </article>
     <article class="summary-card">
       <span class="summary-icon blue" aria-hidden="true">⌁</span>
       <div>
         <p>Out of stock</p>
-        <strong>2 items</strong><span class="summary-note">Review replenishment</span>
+        <strong>{{ outOfStockIds().length }}</strong><span class="summary-note">Review replenishment</span>
       </div>
     </article>
   </section>
@@ -72,10 +72,13 @@
       </label>
       <label class="select-wrap sort-select">
         <span class="sr-only">Sort products</span>
-        <select aria-label="Sort products">
-          <option>Sort by: Name (A–Z)</option>
-          <option>Price: low to high</option>
-          <option>Stock: low to high</option>
+        <select aria-label="Sort products" [value]="sortBy + '-' + sortOrder" (change)="onSortChange($event)">
+          <option value="name-asc">Name (A–Z)</option>
+          <option value="name-desc">Name (Z–A)</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="stock-asc">Stock: low to high</option>
+          <option value="stock-desc">Stock: high to low</option>
         </select>
       </label>
       <button class="filter-button" type="button">
@@ -84,151 +87,69 @@
     </div>
 
     <div class="results-line">
-      <span>Showing <strong>8</strong> of <strong>124</strong> products</span
+      <span>Showing <strong>{{ productsSignal().length }}</strong> of <strong>{{ totalCount() }}</strong> products</span
       ><span class="view-toggle" aria-label="Grid view selected">▦ <span>☰</span></span>
     </div>
 
-    <div class="product-grid">
-      <article class="product-card">
-        <div class="product-visual cola">
-          <span class="product-mark">C</span
-          ><span class="stock-badge in-stock"><i></i>In stock</span
-          ><button class="more-button" type="button" aria-label="More options for Coca-Cola">
-            ⋮
-          </button>
-        </div>
-        <div class="product-info">
-          <span class="category">BEVERAGES</span>
-          <h3>Coca-Cola 1L</h3>
-          <p class="sku">SKU: COLA-001</p>
-          <div class="product-footer">
-            <strong>৳ 650</strong><span class="stock-count">◈ <b>50</b> pcs</span>
+    <div class="product-grid" [class.is-loading]="isLoading()" [class.has-products]="productsSignal().length > 0" [attr.aria-busy]="isLoading()">
+      @if (isLoading() && productsSignal().length === 0) {
+        <p class="loading-status" role="status">
+          <span class="loading-spinner" aria-hidden="true"></span>
+          Loading products…
+        </p>
+        @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+          <article class="product-card skeleton-card" aria-hidden="true">
+            <div class="skeleton-visual"></div>
+            <div class="skeleton-info">
+              <span></span><span></span><span></span>
+            </div>
+          </article>
+        }
+      }
+      @for (product of productsSignal(); track product.id) {
+        <article class="product-card">
+          <div class="product-visual cola">
+            <span class="product-mark">C</span
+            >
+            @if (product.quantityInStock >= product.minimumStockLevel) {
+              <span class="stock-badge in-stock"><i></i>In stock</span
+              >
+            } @else if (product.quantityInStock > 0 && product.quantityInStock < product.minimumStockLevel) {
+              <span class="stock-badge almost-out-of-stock"><i></i>{{product.quantityInStock}} left in stock</span
+              >
+            } @else {
+              <span class="stock-badge out-of-stock"><i></i>Out of stock</span
+              >
+            }
+            <button class="more-button" type="button" aria-label="More options for Coca-Cola">
+              ⋮
+            </button>
           </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual chips">
-          <span class="product-mark">Lay’s</span
-          ><span class="stock-badge in-stock"><i></i>In stock</span
-          ><button class="more-button" type="button" aria-label="More options for Lay's Classic">
-            ⋮
-          </button>
-        </div>
-        <div class="product-info">
-          <span class="category">SNACKS</span>
-          <h3>Lay’s Classic 150g</h3>
-          <p class="sku">SKU: CHIP-001</p>
-          <div class="product-footer">
-            <strong>৳ 450</strong><span class="stock-count">◈ <b>32</b> pcs</span>
+          <div class="product-info">
+            <span class="category">{{product.category.name}}</span>
+            <h3>{{ product.name }}</h3>
+            <p class="product-description thin-product-info">{{ product.description }}</p>
+            <p class="sku thin-product-info">SKU: {{ product.sku }}</p>
+            <div class="product-footer">
+              <strong>{{ product.price | currency }}</strong><span class="stock-count">◈ <b>{{ product.quantityInStock }}</b> pcs</span>
+            </div>
           </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual bread">
-          <span class="product-mark">BREAD</span
-          ><span class="stock-badge low-stock"><i></i>Low stock</span
-          ><button class="more-button" type="button" aria-label="More options for White Bread">
-            ⋮
-          </button>
-        </div>
-        <div class="product-info">
-          <span class="category">BAKERY</span>
-          <h3>White Bread 400g</h3>
-          <p class="sku">SKU: BREAD-001</p>
-          <div class="product-footer">
-            <strong>৳ 320</strong><span class="stock-count">◈ <b>8</b> pcs</span>
-          </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual milk">
-          <span class="product-mark">MILK</span
-          ><span class="stock-badge out-stock"><i></i>Out of stock</span
-          ><button class="more-button" type="button" aria-label="More options for Milk">⋮</button>
-        </div>
-        <div class="product-info">
-          <span class="category">DAIRY</span>
-          <h3>Milk 1L</h3>
-          <p class="sku">SKU: MILK-001</p>
-          <div class="product-footer">
-            <strong>৳ 380</strong><span class="stock-count">◈ <b>0</b> pcs</span>
-          </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual eggs">
-          <span class="product-mark">🥚</span
-          ><span class="stock-badge in-stock"><i></i>In stock</span
-          ><button class="more-button" type="button" aria-label="More options for Eggs">⋮</button>
-        </div>
-        <div class="product-info">
-          <span class="category">DAIRY</span>
-          <h3>Eggs (10 pcs)</h3>
-          <p class="sku">SKU: EGG-001</p>
-          <div class="product-footer">
-            <strong>৳ 520</strong><span class="stock-count">◈ <b>15</b> pcs</span>
-          </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual pasta">
-          <span class="product-mark">PASTA</span
-          ><span class="stock-badge in-stock"><i></i>In stock</span
-          ><button class="more-button" type="button" aria-label="More options for Pasta">⋮</button>
-        </div>
-        <div class="product-info">
-          <span class="category">GROCERIES</span>
-          <h3>Pasta 500g</h3>
-          <p class="sku">SKU: PASTA-001</p>
-          <div class="product-footer">
-            <strong>৳ 390</strong><span class="stock-count">◈ <b>12</b> pcs</span>
-          </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual soap">
-          <span class="product-mark">CLEAN</span
-          ><span class="stock-badge low-stock"><i></i>Low stock</span
-          ><button class="more-button" type="button" aria-label="More options for Dish Soap">
-            ⋮
-          </button>
-        </div>
-        <div class="product-info">
-          <span class="category">HOUSEHOLD</span>
-          <h3>Dish Soap 500ml</h3>
-          <p class="sku">SKU: SOAP-001</p>
-          <div class="product-footer">
-            <strong>৳ 280</strong><span class="stock-count">◈ <b>3</b> pcs</span>
-          </div>
-        </div>
-      </article>
-      <article class="product-card">
-        <div class="product-visual shampoo">
-          <span class="product-mark">CARE</span
-          ><span class="stock-badge in-stock"><i></i>In stock</span
-          ><button class="more-button" type="button" aria-label="More options for Shampoo">
-            ⋮
-          </button>
-        </div>
-        <div class="product-info">
-          <span class="category">PERSONAL CARE</span>
-          <h3>Shampoo 400ml</h3>
-          <p class="sku">SKU: SHAM-001</p>
-          <div class="product-footer">
-            <strong>৳ 620</strong><span class="stock-count">◈ <b>25</b> pcs</span>
-          </div>
-        </div>
-      </article>
+        </article>
+      }
     </div>
 
     <nav class="pagination" aria-label="Product pages">
-      <button type="button" aria-label="Previous page" disabled>‹</button>
-      <button type="button" class="current-page" aria-current="page">1</button>
-      <button type="button">2</button>
-      <button type="button">3</button>
-      <span>…</span>
-      <button type="button">16</button>
-      <button type="button" aria-label="Next page">›</button>
+      <button type="button" aria-label="Previous page" [disabled]="currentPage <= 1" (click)="loadPage(currentPage - 1)">‹</button>
+      @for (page of pageNumbers; track page) {
+        <button
+          type="button"
+          [class.current-page]="page === currentPage"
+          [attr.aria-current]="page === currentPage ? 'page' : null"
+          [attr.aria-label]="'Page ' + page"
+          (click)="loadPage(page)"
+        >{{ page }}</button>
+      }
+      <button type="button" aria-label="Next page" [disabled]="currentPage >= totalPages()" (click)="loadPage(currentPage + 1)">›</button>
     </nav>
   </section>
 </main>

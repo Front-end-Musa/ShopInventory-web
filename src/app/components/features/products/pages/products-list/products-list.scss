@@ -283,9 +283,67 @@ button {
 }
 
 .product-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+}
+.product-grid.is-loading.has-products {
+  opacity: 0.58;
+  pointer-events: none;
+}
+.loading-status {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 0;
+  padding: 10px;
+  color: #52637a;
+  font-size: 12px;
+}
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d9eee9;
+  border-top-color: #14977f;
+  border-radius: 50%;
+  animation: product-spin 0.75s linear infinite;
+}
+.skeleton-card {
+  overflow: hidden;
+}
+.skeleton-visual {
+  min-height: 139px;
+}
+.skeleton-info {
+  display: grid;
+  gap: 9px;
+  padding: 13px 12px;
+}
+.skeleton-info span,
+.skeleton-visual {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #edf1f4 25%, #f7f9fa 50%, #edf1f4 75%);
+  background-size: 200% 100%;
+  animation: product-shimmer 1.35s ease-in-out infinite;
+}
+.skeleton-info span:nth-child(1) { width: 38%; height: 8px; }
+.skeleton-info span:nth-child(2) { width: 76%; height: 12px; }
+.skeleton-info span:nth-child(3) { width: 55%; height: 8px; }
+@keyframes product-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes product-shimmer {
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner,
+  .skeleton-info span,
+  .skeleton-visual {
+    animation: none;
+  }
 }
 .product-card {
   overflow: hidden;
@@ -449,10 +507,15 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.sku {
+.thin-product-info {
+  overflow: hidden;
   margin: 0;
   color: #95a0af;
   font-size: 10px;
+  text-overflow: ellipsis;
+}
+.product-description {
+  white-space: nowrap;
 }
 .product-footer {
   justify-content: space-between;
