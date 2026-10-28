@@ -1,0 +1,48 @@
+<aside class="sidebar" aria-label="Main navigation">
+  <a class="brand" routerLink="/products" aria-label="Shop Inventory home">
+    <span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="brand-copy"
+      ><strong>Shop Inventory</strong><small>Less stock. More control.</small></span
+    >
+  </a>
+
+  <nav class="primary-nav" aria-label="Main menu">
+    <a
+      class="nav-link"
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <span class="nav-icon" aria-hidden="true">⌂</span><span>Dashboard</span>
+    </a>
+    <a class="nav-link" routerLink="/products" routerLinkActive="active">
+      <span class="nav-icon" aria-hidden="true">⬡</span><span>Products</span>
+    </a>
+    <a class="nav-link" routerLink="/categories" routerLinkActive="active">
+      <span class="nav-icon" aria-hidden="true">▦</span><span>Categories</span>
+    </a>
+    <a class="nav-link" routerLink="/stock" routerLinkActive="active">
+      <span class="nav-icon" aria-hidden="true">▱</span><span>Stock</span>
+    </a>
+    <a class="nav-link" routerLink="/sales" routerLinkActive="active">
+      <span class="nav-icon" aria-hidden="true">⌁</span><span>Sales</span>
+    </a>
+    <a class="nav-link" routerLink="/reports" routerLinkActive="active">
+      <span class="nav-icon" aria-hidden="true">▤</span><span>Reports</span>
+    </a>
+  </nav>
+
+  <a class="settings-link" routerLink="/settings" routerLinkActive="active">
+    <span class="nav-icon" aria-hidden="true">⚙</span><span>Settings</span>
+  </a>
+
+  <section class="sidebar-promo" aria-label="Inventory tip">
+    <div class="promo-glow" aria-hidden="true"></div>
+    <div class="promo-content">
+      <span class="promo-label">SHOP SMARTER</span>
+      <h2>Your shop,<br />under control.</h2>
+      <p>Track stock, manage products, and keep your business growing.</p>
+      <button type="button" aria-label="Learn more">→</button>
+    </div>
+  </section>
+</aside>

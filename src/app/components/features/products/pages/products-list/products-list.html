@@ -1,0 +1,234 @@
+<main class="products-page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">INVENTORY</p>
+      <h1>Products</h1>
+      <p class="page-description">Manage your products, prices, and stock levels.</p>
+    </div>
+    <button class="add-button" type="button">
+      <span aria-hidden="true">＋</span>
+      Add Product
+    </button>
+  </header>
+
+  <section class="summary-grid" aria-label="Product inventory summary">
+    <article class="summary-card">
+      <span class="summary-icon mint" aria-hidden="true">▦</span>
+      <div>
+        <p>Total products</p>
+        <strong>124</strong><span class="summary-note">Across 8 categories</span>
+      </div>
+    </article>
+    <article class="summary-card">
+      <span class="summary-icon violet" aria-hidden="true">▤</span>
+      <div>
+        <p>Stock value</p>
+        <strong>৳ 1,248,650</strong
+        ><span class="summary-note positive">↑ 12% <span>vs. last month</span></span>
+      </div>
+    </article>
+    <article class="summary-card">
+      <span class="summary-icon amber" aria-hidden="true">◈</span>
+      <div>
+        <p>Low stock</p>
+        <strong>7 items</strong><span class="summary-note warning">Needs attention</span>
+      </div>
+    </article>
+    <article class="summary-card">
+      <span class="summary-icon blue" aria-hidden="true">⌁</span>
+      <div>
+        <p>Out of stock</p>
+        <strong>2 items</strong><span class="summary-note">Review replenishment</span>
+      </div>
+    </article>
+  </section>
+
+  <section class="catalog-panel" aria-labelledby="catalog-title">
+    <div class="catalog-heading">
+      <div class="catalog-title-wrap">
+        <span class="catalog-icon" aria-hidden="true">▦</span>
+        <div>
+          <h2 id="catalog-title">Product catalog</h2>
+          <p>Browse and manage your inventory</p>
+        </div>
+      </div>
+      <button class="text-button" type="button">Export <span aria-hidden="true">↗</span></button>
+    </div>
+
+    <div class="toolbar" role="search">
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" placeholder="Search products, SKU..." aria-label="Search products" />
+      </label>
+      <label class="select-wrap">
+        <span class="sr-only">Filter by category</span>
+        <select aria-label="Filter by category">
+          <option>All categories</option>
+          <option>Beverages</option>
+          <option>Bakery</option>
+          <option>Dairy</option>
+          <option>Household</option>
+        </select>
+      </label>
+      <label class="select-wrap sort-select">
+        <span class="sr-only">Sort products</span>
+        <select aria-label="Sort products">
+          <option>Sort by: Name (A–Z)</option>
+          <option>Price: low to high</option>
+          <option>Stock: low to high</option>
+        </select>
+      </label>
+      <button class="filter-button" type="button">
+        <span aria-hidden="true">☷</span> Filters
+      </button>
+    </div>
+
+    <div class="results-line">
+      <span>Showing <strong>8</strong> of <strong>124</strong> products</span
+      ><span class="view-toggle" aria-label="Grid view selected">▦ <span>☰</span></span>
+    </div>
+
+    <div class="product-grid">
+      <article class="product-card">
+        <div class="product-visual cola">
+          <span class="product-mark">C</span
+          ><span class="stock-badge in-stock"><i></i>In stock</span
+          ><button class="more-button" type="button" aria-label="More options for Coca-Cola">
+            ⋮
+          </button>
+        </div>
+        <div class="product-info">
+          <span class="category">BEVERAGES</span>
+          <h3>Coca-Cola 1L</h3>
+          <p class="sku">SKU: COLA-001</p>
+          <div class="product-footer">
+            <strong>৳ 650</strong><span class="stock-count">◈ <b>50</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual chips">
+          <span class="product-mark">Lay’s</span
+          ><span class="stock-badge in-stock"><i></i>In stock</span
+          ><button class="more-button" type="button" aria-label="More options for Lay's Classic">
+            ⋮
+          </button>
+        </div>
+        <div class="product-info">
+          <span class="category">SNACKS</span>
+          <h3>Lay’s Classic 150g</h3>
+          <p class="sku">SKU: CHIP-001</p>
+          <div class="product-footer">
+            <strong>৳ 450</strong><span class="stock-count">◈ <b>32</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual bread">
+          <span class="product-mark">BREAD</span
+          ><span class="stock-badge low-stock"><i></i>Low stock</span
+          ><button class="more-button" type="button" aria-label="More options for White Bread">
+            ⋮
+          </button>
+        </div>
+        <div class="product-info">
+          <span class="category">BAKERY</span>
+          <h3>White Bread 400g</h3>
+          <p class="sku">SKU: BREAD-001</p>
+          <div class="product-footer">
+            <strong>৳ 320</strong><span class="stock-count">◈ <b>8</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual milk">
+          <span class="product-mark">MILK</span
+          ><span class="stock-badge out-stock"><i></i>Out of stock</span
+          ><button class="more-button" type="button" aria-label="More options for Milk">⋮</button>
+        </div>
+        <div class="product-info">
+          <span class="category">DAIRY</span>
+          <h3>Milk 1L</h3>
+          <p class="sku">SKU: MILK-001</p>
+          <div class="product-footer">
+            <strong>৳ 380</strong><span class="stock-count">◈ <b>0</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual eggs">
+          <span class="product-mark">🥚</span
+          ><span class="stock-badge in-stock"><i></i>In stock</span
+          ><button class="more-button" type="button" aria-label="More options for Eggs">⋮</button>
+        </div>
+        <div class="product-info">
+          <span class="category">DAIRY</span>
+          <h3>Eggs (10 pcs)</h3>
+          <p class="sku">SKU: EGG-001</p>
+          <div class="product-footer">
+            <strong>৳ 520</strong><span class="stock-count">◈ <b>15</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual pasta">
+          <span class="product-mark">PASTA</span
+          ><span class="stock-badge in-stock"><i></i>In stock</span
+          ><button class="more-button" type="button" aria-label="More options for Pasta">⋮</button>
+        </div>
+        <div class="product-info">
+          <span class="category">GROCERIES</span>
+          <h3>Pasta 500g</h3>
+          <p class="sku">SKU: PASTA-001</p>
+          <div class="product-footer">
+            <strong>৳ 390</strong><span class="stock-count">◈ <b>12</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual soap">
+          <span class="product-mark">CLEAN</span
+          ><span class="stock-badge low-stock"><i></i>Low stock</span
+          ><button class="more-button" type="button" aria-label="More options for Dish Soap">
+            ⋮
+          </button>
+        </div>
+        <div class="product-info">
+          <span class="category">HOUSEHOLD</span>
+          <h3>Dish Soap 500ml</h3>
+          <p class="sku">SKU: SOAP-001</p>
+          <div class="product-footer">
+            <strong>৳ 280</strong><span class="stock-count">◈ <b>3</b> pcs</span>
+          </div>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-visual shampoo">
+          <span class="product-mark">CARE</span
+          ><span class="stock-badge in-stock"><i></i>In stock</span
+          ><button class="more-button" type="button" aria-label="More options for Shampoo">
+            ⋮
+          </button>
+        </div>
+        <div class="product-info">
+          <span class="category">PERSONAL CARE</span>
+          <h3>Shampoo 400ml</h3>
+          <p class="sku">SKU: SHAM-001</p>
+          <div class="product-footer">
+            <strong>৳ 620</strong><span class="stock-count">◈ <b>25</b> pcs</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <nav class="pagination" aria-label="Product pages">
+      <button type="button" aria-label="Previous page" disabled>‹</button>
+      <button type="button" class="current-page" aria-current="page">1</button>
+      <button type="button">2</button>
+      <button type="button">3</button>
+      <span>…</span>
+      <button type="button">16</button>
+      <button type="button" aria-label="Next page">›</button>
+    </nav>
+  </section>
+</main>

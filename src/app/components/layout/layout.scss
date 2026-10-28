@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f8fafb;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  min-width: 0;
+  flex: 1;
+}
+
+@media (max-width: 650px) {
+  .layout {
+    flex-direction: column;
+  }
+}
