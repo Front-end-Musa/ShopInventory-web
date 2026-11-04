@@ -44,4 +44,8 @@ export class ProductsFacade {
   deleteProduct(id: number): void {
     this.store.dispatch(ProductsActions.deleteProduct({ id }));
   }
+
+  searchChanged(searchInput: string) {
+    this.store.dispatch(ProductsActions.searchProducts({ searchInput }))
+  }
 }

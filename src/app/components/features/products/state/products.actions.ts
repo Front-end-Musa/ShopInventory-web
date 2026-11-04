@@ -50,3 +50,8 @@ export const deleteProductFailure = createAction(
   '[Products/API] Delete Product Failure',
   props<{ error: unknown }>(),
 );
+
+export const searchProducts = createAction(
+  '[Products/UI] Search Products',
+  props<{ searchInput: string }>()
+)

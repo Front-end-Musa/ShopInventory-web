@@ -1,13 +1,15 @@
-import { Component, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
 import { ProductsFacade } from '../../state/products.facade';
 import { Product } from '../../data-access/products.models';
-import { Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subscription } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
 import { SortByType, SortOrderType } from '../../data-access/products-sorting.types';
 import { MatIconModule } from '@angular/material/icon';
+import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  imports: [CurrencyPipe, MatIconModule],
+  imports: [CurrencyPipe, MatIconModule, ReactiveFormsModule],
   selector: 'app-products-list',
   styleUrl: './products-list.scss',
   templateUrl: './products-list.html',
@@ -25,7 +27,10 @@ export class ProductsList implements OnInit, OnDestroy {
   public pageSize = 20;
   public sortOrder: SortOrderType = 'asc';
   public sortBy: SortByType = 'name';
-  constructor(private productsFacade: ProductsFacade) {}
+  searchControl = new FormControl('', {
+    nonNullable: true
+  });
+  constructor(private productsFacade: ProductsFacade, private destroyRef: DestroyRef) {}
 
   ngOnInit(): void {
     this.productsSubscription = this.productsFacade.products$.subscribe((products) => {
@@ -41,6 +46,12 @@ export class ProductsList implements OnInit, OnDestroy {
       this.isLoading.set(isLoading);
     });
     this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder);
+    
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(searchInput => this.productsFacade.searchChanged(searchInput))
   }
 
   ngOnDestroy(): void {

@@ -33,3 +33,11 @@ export interface ProductRequestDto {
   quantityInStock: number;
   minimumStockLevel: number;
 }
+
+export interface ProductsQuery {
+  searchInput: string;
+  page: number;
+  pageSize: number;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}

@@ -4,17 +4,23 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import * as ProductsActions from './products.actions';
 import { ProductsApiService } from '../data-access/products-api.service';
+import { concatLatestFrom } from '@ngrx/operators';
+import { Store } from '@ngrx/store';
+import { selectProductsQuery } from './products.reducer';
 
 @Injectable()
 export class ProductsEffects {
   private readonly productsService = inject(ProductsApiService);
   private readonly actions$ = inject(Actions);
+  private readonly store = inject(Store);
 
   loadProducts$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(ProductsActions.loadProducts),
-      switchMap(({ page, pageSize, sortBy, sortOrder }) =>
-        this.productsService.getAll(page, pageSize, sortBy, sortOrder).pipe(
+      ofType(ProductsActions.loadProducts, ProductsActions.searchProducts),
+      concatLatestFrom(() =>
+        this.store.select(selectProductsQuery)),
+      switchMap(([, query]) =>
+        this.productsService.getAll(query).pipe(
           map((response) => ProductsActions.loadProductsSuccess({ response })),
           catchError((error: unknown) => of(ProductsActions.loadProductsFailure({ error }))),
         ),

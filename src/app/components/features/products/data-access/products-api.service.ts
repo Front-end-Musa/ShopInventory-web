@@ -1,8 +1,7 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { ProductRequestDto, Product, ProductsResponse } from "./products.models";
-import { SortByType, SortOrderType } from "./products-sorting.types";
+import { ProductRequestDto, Product, ProductsResponse, ProductsQuery } from "./products.models";
 
 @Injectable({
     providedIn: 'root'
@@ -11,12 +10,17 @@ export class ProductsApiService {
     private readonly http = inject(HttpClient);
     private readonly apiUrl = 'https://localhost:7126/api/products';
 
-    getAll(page: number, pageSize: number, sortBy?: SortByType, sortOrder?: SortOrderType): Observable<ProductsResponse> {
-        const params: Record<string, string | number> = { page, pageSize };
-        if (sortBy && sortOrder) {
-            params['sortBy'] = sortBy;
-            params['sortOrder'] = sortOrder;
+    getAll(query: ProductsQuery): Observable<ProductsResponse> {
+        let params = new HttpParams()
+        .set('page', query.page)
+        .set('pageSize', query.pageSize)
+        .set('sortBy', query.sortBy)
+        .set('sortOrder', query.sortOrder);
+
+        if (query.searchInput.trim()) {
+            params = params.set('searchInput', query.searchInput.trim());
         }
+
         return this.http.get<ProductsResponse>(this.apiUrl, { params });
     }
 

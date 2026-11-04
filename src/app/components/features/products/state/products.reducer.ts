@@ -1,8 +1,7 @@
 import { createEntityAdapter, EntityState } from '@ngrx/entity';
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
-import { Product } from '../data-access/products.models';
+import { Product, ProductsQuery } from '../data-access/products.models';
 import * as ProductsActions from './products.actions';
-import { SortByType, SortOrderType } from '../data-access/products-sorting.types';
 
 export const productsFeatureKey = 'products';
 
@@ -12,10 +11,7 @@ export interface State extends EntityState<Product> {
   selectedProductId: number | null;
   totalCount: number;
   totalPages: number;
-  page: number;
-  pageSize: number;
-  sortBy: SortByType;
-  sortOrder: SortOrderType;
+  query: ProductsQuery;
 }
 
 export const adapter = createEntityAdapter<Product>();
@@ -26,15 +22,30 @@ export const initialState: State = adapter.getInitialState({
   selectedProductId: null,
   totalCount: 0,
   totalPages: 0,
-  page: 1,
-  pageSize: 10,
-  sortBy: 'name',
-  sortOrder: 'asc'
+  query: {
+    page: 1,
+    pageSize: 10,
+    sortBy: 'name',
+    sortOrder: 'asc',
+    searchInput: '',
+  },
 });
 
 export const ProductsReducer = createReducer(
   initialState,
-  on(ProductsActions.loadProducts, ProductsActions.loadProductById, (state) => ({
+  on(ProductsActions.loadProducts, (state, { page, pageSize, sortBy, sortOrder }) => ({
+    ...state,
+    query: {
+      ...state.query,
+      page,
+      pageSize,
+      sortBy: sortBy ?? state.query.sortBy,
+      sortOrder: sortOrder ?? state.query.sortOrder,
+    },
+    status: 'loading' as const,
+    error: null,
+  })),
+  on(ProductsActions.loadProductById, (state) => ({
     ...state,
     status: 'loading' as const,
     error: null,
@@ -46,8 +57,11 @@ export const ProductsReducer = createReducer(
       error: null,
       totalCount: response.totalCount,
       totalPages: response.totalPages,
-      page: response.page,
-      pageSize: response.pageSize,
+      query: {
+        ...state.query,
+        page: response.page,
+        pageSize: response.pageSize,
+      },
     }),
   ),
   on(ProductsActions.loadProductByIdSuccess, (state, { product }) =>
@@ -81,6 +95,15 @@ export const ProductsReducer = createReducer(
       selectedProductId: state.selectedProductId === id ? null : state.selectedProductId,
     }),
   ),
+  on(ProductsActions.searchProducts, (state, { searchInput }) => ({
+    ...state,
+    query: {
+      ...state.query,
+      searchInput,
+      page: 1,
+    },
+    status: 'loading' as const,
+  })),
 );
 
 export const productsFeature = createFeature({
@@ -117,3 +140,4 @@ export const selectIsLoading = createSelector(
   (status) => status === 'loading',
 );
 
+export const selectProductsQuery = productsFeature.selectQuery;
