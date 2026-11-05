@@ -116,17 +116,16 @@
       }
       @for (product of productsSignal(); track product.id) {
         <article class="product-card">
-          <div class="product-visual cola">
-            <span class="product-mark">C</span
-            >
-            @if (product.quantityInStock >= product.minimumStockLevel) {
+          <app-product-barcode [barcode]="product.barcode" [sku]="product.sku" />
+          <div class="barcode-card-actions">
+            @if (product.quantityInStock > 0 && product.quantityInStock >= product.minimumStockLevel) {
               <span class="stock-badge in-stock"><i></i>In stock</span
               >
             } @else if (product.quantityInStock > 0 && product.quantityInStock < product.minimumStockLevel) {
-              <span class="stock-badge almost-out-of-stock"><i></i>{{product.quantityInStock}} left in stock</span
+              <span class="stock-badge low-stock"><i></i>{{product.quantityInStock}} left in stock</span
               >
             } @else {
-              <span class="stock-badge out-of-stock"><i></i>Out of stock</span
+              <span class="stock-badge out-stock"><i></i>Out of stock</span
               >
             }
             <a [routerLink]="['/products', product.id, 'edit']">Edit {{ product.name }}</a>

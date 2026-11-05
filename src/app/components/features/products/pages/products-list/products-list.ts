@@ -1,3 +1,4 @@
+import { ProductBarcode } from '../../components/product-barcode/product-barcode';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteConfirmation } from '../../../../shared/delete-confirmation';
 import { CategoriesFacade } from '../../../category/data-access/categories.facade';
@@ -17,9 +18,17 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  imports: [RouterLink, ProductTable, CurrencyPipe, MatIconModule, ReactiveFormsModule],
+  imports: [RouterLink, ProductBarcode, ProductTable, CurrencyPipe, MatIconModule, ReactiveFormsModule],
   selector: 'app-products-list',
   styleUrl: './products-list.scss',
+  styles: [`
+    .barcode-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem; border-top: 1px solid #e2e8f0; }
+    .barcode-card-actions .stock-badge { position: static; font-size: .75rem; }
+    .barcode-card-actions .low-stock { color: #784400; }
+    .barcode-card-actions .out-stock { color: #9b2233; }
+    .barcode-card-actions a, .barcode-card-actions button { display: inline-flex; align-items: center; min-height: 44px; padding: .5rem; color: #17243b; }
+    .barcode-card-actions a:focus-visible, .barcode-card-actions button:focus-visible { outline: 2px solid #2456a6; outline-offset: 2px; }
+  `],
   templateUrl: './products-list.html',
 })
 export class ProductsList implements OnInit, OnDestroy {
