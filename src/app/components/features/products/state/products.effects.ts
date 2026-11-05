@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import * as ProductsActions from './products.actions';
 import { ProductsApiService } from '../data-access/products-api.service';
@@ -16,7 +16,7 @@ export class ProductsEffects {
 
   loadProducts$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(ProductsActions.loadProducts, ProductsActions.searchProducts),
+      ofType(ProductsActions.loadProducts, ProductsActions.searchProducts, ProductsActions.categoryChanged),
       concatLatestFrom(() =>
         this.store.select(selectProductsQuery)),
       switchMap(([, query]) =>
@@ -43,7 +43,7 @@ export class ProductsEffects {
   createProduct$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ProductsActions.createProduct),
-      switchMap(({ request }) =>
+      exhaustMap(({ request }) =>
         this.productsService.create(request).pipe(
           map((product) => ProductsActions.createProductSuccess({ product })),
           catchError((error: unknown) => of(ProductsActions.createProductFailure({ error }))),

@@ -6,6 +6,8 @@ import * as ProductsActions from './products.actions';
 export const productsFeatureKey = 'products';
 
 export interface State extends EntityState<Product> {
+  creationStatus: 'idle' | 'saving' | 'success' | 'error';
+  creationError: unknown;
   status: 'init' | 'loading' | 'loaded' | 'error';
   error: unknown | null;
   selectedProductId: number | null;
@@ -17,6 +19,8 @@ export interface State extends EntityState<Product> {
 export const adapter = createEntityAdapter<Product>();
 
 export const initialState: State = adapter.getInitialState({
+  creationStatus: 'idle',
+  creationError: null,
   status: 'init',
   error: null,
   selectedProductId: null,
@@ -33,6 +37,10 @@ export const initialState: State = adapter.getInitialState({
 
 export const ProductsReducer = createReducer(
   initialState,
+  on(ProductsActions.categoryChanged, (state, { categoryId }) => ({ ...state, query: { ...state.query, categoryId, page: 1 }, status: 'loading' as const })),
+  on(ProductsActions.resetCreation, state => ({ ...state, creationStatus: 'idle' as const, creationError: null })),
+  on(ProductsActions.createProduct, state => ({ ...state, creationStatus: 'saving' as const, creationError: null })),
+  on(ProductsActions.createProductFailure, (state, { error }) => ({ ...state, creationStatus: 'error' as const, creationError: error })),
   on(ProductsActions.loadProducts, (state, { page, pageSize, sortBy, sortOrder }) => ({
     ...state,
     query: {
@@ -85,7 +93,7 @@ export const ProductsReducer = createReducer(
     error: null,
   })),
   on(ProductsActions.createProductSuccess, (state, { product }) =>
-    adapter.addOne(product, { ...state, status: 'loaded', error: null }),
+    adapter.addOne(product, { ...state, creationStatus: 'success', status: 'loaded', error: null }),
   ),
   on(ProductsActions.deleteProductSuccess, (state, { id }) =>
     adapter.removeOne(id, {

@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import { ProductRequestDto } from '../data-access/products.models';
 import * as ProductsActions from './products.actions';
 import {
+  productsFeature,
   selectAllProducts,
   selectError,
   selectIsLoading,
@@ -18,6 +19,11 @@ import { SortByType, SortOrderType } from '../data-access/products-sorting.types
 @Injectable({ providedIn: 'root' })
 export class ProductsFacade {
   private readonly store = inject(Store);
+
+  readonly query = this.store.selectSignal(productsFeature.selectQuery);
+  readonly creationStatus = this.store.selectSignal(productsFeature.selectCreationStatus);
+  readonly creationError = this.store.selectSignal(productsFeature.selectCreationError);
+  resetCreation(): void { this.store.dispatch(ProductsActions.resetCreation()); }
 
   readonly products$ = this.store.select(selectAllProducts);
   readonly total$ = this.store.select(selectTotal);
@@ -44,6 +50,8 @@ export class ProductsFacade {
   deleteProduct(id: number): void {
     this.store.dispatch(ProductsActions.deleteProduct({ id }));
   }
+
+  categoryChanged(categoryId: number | undefined): void { this.store.dispatch(ProductsActions.categoryChanged({ categoryId })); }
 
   searchChanged(searchInput: string) {
     this.store.dispatch(ProductsActions.searchProducts({ searchInput }))

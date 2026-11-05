@@ -1,3 +1,4 @@
+import { CategoriesFacade } from './data-access/categories.facade';
 import { Observable } from 'rxjs';
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
@@ -29,7 +30,8 @@ import { Category } from './data-access/category.models';
 })
 export class CategoryPage {
   private readonly api = inject(CategoryApiService);
-  readonly categories = signal<Category[]>([]);
+  private readonly categoryFacade = inject(CategoriesFacade);
+  readonly categories = this.categoryFacade.categories;
   readonly busy = signal(false);
   readonly error = signal('');
   readonly editing = signal<number | null>(null);

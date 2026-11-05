@@ -1,4 +1,10 @@
-import { Component, DestroyRef, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
+import { CategoriesFacade } from '../../../category/data-access/categories.facade';
+import { CategoryApiService } from '../../../category/data-access/category-api.service';
+import { Category } from '../../../category/data-access/category.models';
+import { ProductsApiService } from '../../data-access/products-api.service';
+import { effect, inject, afterNextRender, Component, DestroyRef, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ProductTable } from '../../components/product-table/product-table';
 import { ProductsFacade } from '../../state/products.facade';
 import { Product } from '../../data-access/products.models';
 import { debounceTime, distinctUntilChanged, Subscription } from 'rxjs';
@@ -9,12 +15,37 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  imports: [CurrencyPipe, MatIconModule, ReactiveFormsModule],
+  imports: [RouterLink, ProductTable, CurrencyPipe, MatIconModule, ReactiveFormsModule],
   selector: 'app-products-list',
   styleUrl: './products-list.scss',
   templateUrl: './products-list.html',
 })
 export class ProductsList implements OnInit, OnDestroy {
+  readonly categoriesFacade = inject(CategoriesFacade);
+  readonly categories = this.categoriesFacade.categories;
+  readonly actionError = signal('');
+  readonly deleting = signal(false);
+  private readonly api = inject(ProductsApiService);
+  private readonly categoriesApi = inject(CategoryApiService);
+  categoryChanged(event: Event): void {
+    this.currentPage = 1;
+    this.productsFacade.categoryChanged(Number((event.target as HTMLSelectElement).value) || undefined);
+  }
+  deleteProduct(product: Product): void {
+    if (this.deleting() || !window.confirm(`Delete ${product.name}?`)) return;
+    this.deleting.set(true);
+    this.api.delete(product.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => { this.deleting.set(false); if (this.productsSignal().length === 1 && this.currentPage > 1) this.currentPage--; this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder); },
+      error: () => { this.deleting.set(false); this.actionError.set('Unable to delete product. Please try again.'); },
+    });
+  }
+  readonly viewMode = signal<'grid' | 'table'>('grid');
+
+  setViewMode(mode: 'grid' | 'table'): void {
+    this.viewMode.set(mode);
+    try { localStorage.setItem('shopInventory.products.viewMode', mode); } catch { /* Storage may be unavailable. */ }
+  }
+
   private productsSubscription: Subscription | null = null;
   private totalPagesSubscription: Subscription | null = null;
   private totalCountSubscription: Subscription | null = null;
@@ -30,9 +61,18 @@ export class ProductsList implements OnInit, OnDestroy {
   searchControl = new FormControl('', {
     nonNullable: true
   });
-  constructor(private productsFacade: ProductsFacade, private destroyRef: DestroyRef) {}
+  constructor(private productsFacade: ProductsFacade, private destroyRef: DestroyRef) {
+    effect(() => { this.currentPage = this.productsFacade.query().page; });
+    afterNextRender(() => {
+      try {
+        const saved = localStorage.getItem('shopInventory.products.viewMode');
+        if (saved === 'grid' || saved === 'table') this.viewMode.set(saved);
+      } catch { /* Keep the default when storage is unavailable. */ }
+    });
+  }
 
   ngOnInit(): void {
+    this.categoriesFacade.load();
     this.productsSubscription = this.productsFacade.products$.subscribe((products) => {
       this.productsSignal.set(products);
     });

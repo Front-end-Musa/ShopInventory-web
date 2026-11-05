@@ -55,3 +55,7 @@ export const searchProducts = createAction(
   '[Products/UI] Search Products',
   props<{ searchInput: string }>()
 )
+
+export const resetCreation = createAction('[Products/UI] Reset Creation');
+
+export const categoryChanged = createAction('[Products/UI] Category Changed', props<{ categoryId: number | undefined }>());
