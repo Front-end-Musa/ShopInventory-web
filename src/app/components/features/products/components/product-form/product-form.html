@@ -1,1 +1,41 @@
-<p>product-form works!</p>
+<main>
+  @if (isCreate || editLoaded()) {
+    <h1>{{ isCreate ? 'Add Product' : 'Edit product' }}</h1>
+    @if (editStatus() === 'error') { <p role="alert">Unable to save product. Try again.</p> }
+    <form (submit)="submit($event)">
+      <label>Name <input [formField]="fields.name" /></label>
+      <label>SKU <input [formField]="fields.sku" /></label>
+      <label>Barcode <input [formField]="fields.barcode" /></label>
+      <label>Description <textarea [formField]="fields.description"></textarea></label>
+      <label>Price <input type="number" step="any" [formField]="fields.price" /></label>
+      <label>Cost price <input type="number" step="any" [formField]="fields.costPrice" /></label>
+      <label>Category
+        <select [value]="value().categoryId" (change)="selectCategory($event)">
+          <option [value]="0">Select a category</option>
+          @for (category of categories(); track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+      @if (categoryStatus() === 'loading') { <p role="status">Loading categories…</p> }
+      @if (categoryStatus() === 'error') {
+        <p role="alert">Categories could not be loaded.</p>
+        <button type="button" (click)="loadCategories()">Retry</button>
+      }
+      @if (categoryStatus() === 'loaded' && categories().length === 0) {
+        <p role="status">A category must exist before adding a product.</p>
+      }
+      <label>Quantity in stock <input type="number" step="1" [formField]="fields.quantityInStock" /></label>
+      <label>Minimum stock level <input type="number" step="1" [formField]="fields.minimumStockLevel" /></label>
+      @if (submitted()) {
+        <p role="status">Name and SKU are required. Price must be at least 0.01. Cost and whole-number stock levels must be nonnegative. Select an available category.</p>
+      }
+      @if (facade.creationStatus() === 'error') { <p role="alert">Unable to save the product. Check the values and try again.</p> }
+      @if (facade.creationStatus() === 'saving') { <p role="status">Saving product…</p> }
+      <button type="submit" [disabled]="editStatus() === 'saving' || facade.creationStatus() === 'saving' || categoryStatus() !== 'loaded' || categories().length === 0">Save product</button>
+      <a routerLink="/products">Cancel</a>
+    </form>
+  } @else {
+    <h1>Edit product</h1><p>{{ editStatus() === 'error' ? 'Unable to load this product.' : 'Loading product…' }}</p><a routerLink="/products">Back to products</a>
+  }
+</main>
