@@ -1,3 +1,5 @@
+import { MatDialog } from '@angular/material/dialog';
+import { DeleteConfirmation } from '../../../../shared/delete-confirmation';
 import { CategoriesFacade } from '../../../category/data-access/categories.facade';
 import { CategoryApiService } from '../../../category/data-access/category-api.service';
 import { Category } from '../../../category/data-access/category.models';
@@ -25,6 +27,7 @@ export class ProductsList implements OnInit, OnDestroy {
   readonly categories = this.categoriesFacade.categories;
   readonly actionError = signal('');
   readonly deleting = signal(false);
+  private readonly dialog = inject(MatDialog);
   private readonly api = inject(ProductsApiService);
   private readonly categoriesApi = inject(CategoryApiService);
   categoryChanged(event: Event): void {
@@ -32,8 +35,14 @@ export class ProductsList implements OnInit, OnDestroy {
     this.productsFacade.categoryChanged(Number((event.target as HTMLSelectElement).value) || undefined);
   }
   deleteProduct(product: Product): void {
-    if (this.deleting() || !window.confirm(`Delete ${product.name}?`)) return;
+    if (this.deleting()) return;
     this.deleting.set(true);
+    this.dialog.open(DeleteConfirmation, { data: product.name, autoFocus: 'first-tabbable', restoreFocus: true }).afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
+      if (confirmed !== true) { this.deleting.set(false); return; }
+      this.performDelete(product);
+    });
+  }
+  private performDelete(product: Product): void {
     this.api.delete(product.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.deleting.set(false); if (this.productsSignal().length === 1 && this.currentPage > 1) this.currentPage--; this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder); },
       error: () => { this.deleting.set(false); this.actionError.set('Unable to delete product. Please try again.'); },
