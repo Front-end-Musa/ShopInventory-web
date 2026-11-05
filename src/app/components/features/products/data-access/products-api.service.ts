@@ -21,6 +21,7 @@ export class ProductsApiService {
             params = params.set('searchInput', query.searchInput.trim());
         }
 
+        if (query.categoryId) params = params.set('categoryId', query.categoryId);
         return this.http.get<ProductsResponse>(this.apiUrl, { params });
     }
 
@@ -30,6 +31,10 @@ export class ProductsApiService {
 
     create(request: ProductRequestDto): Observable<Product> {
         return this.http.post<Product>(this.apiUrl, request);
+    }
+
+    update(id: number, request: ProductRequestDto): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/${id}`, request);
     }
 
     delete(id: number): Observable<void> {

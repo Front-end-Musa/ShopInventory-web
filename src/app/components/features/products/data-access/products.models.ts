@@ -35,6 +35,7 @@ export interface ProductRequestDto {
 }
 
 export interface ProductsQuery {
+  categoryId?: number;
   searchInput: string;
   page: number;
   pageSize: number;
