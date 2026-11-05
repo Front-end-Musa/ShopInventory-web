@@ -8,7 +8,7 @@ import { Category, CategoryRequestDto } from "./category.models";
 })
 export class CategoryApiService {
     private readonly http = inject(HttpClient);
-    private readonly apiUrl = '/api/category';
+    private readonly apiUrl = 'https://localhost:7126/api/categories';
 
     getAll(): Observable<Category[]> {
         return this.http.get<Category[]>(this.apiUrl);
