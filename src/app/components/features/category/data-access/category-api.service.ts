@@ -22,6 +22,10 @@ export class CategoryApiService {
         return this.http.post<Category>(this.apiUrl, request);
     }
 
+    update(id: number, request: CategoryRequestDto): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/${id}`, request);
+    }
+
     delete(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
     }

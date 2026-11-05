@@ -11,6 +11,10 @@ export const routes: Routes = [
                 pathMatch: 'full'
             },
             {
+                path: 'categories',
+                loadChildren: () => import('./components/features/category/category.routes').then(m => m.CATEGORY_ROUTES),
+            },
+            {
                 path: 'products',
                 loadChildren: () =>
                 import('./components/features/products/products.routes')

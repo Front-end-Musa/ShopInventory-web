@@ -28,7 +28,7 @@ export class Sidebar {
     },
     {
       title: "Categories",
-      link: "/category",
+      link: "/categories",
       icon: "table"
     },
   ]
