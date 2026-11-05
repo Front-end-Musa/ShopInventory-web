@@ -28,6 +28,7 @@
     "@ngrx/store": "^22.0.1",
     "@ngrx/store-devtools": "^22.0.1",
     "express": "^5.1.0",
+    "jsbarcode": "^3.12.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
