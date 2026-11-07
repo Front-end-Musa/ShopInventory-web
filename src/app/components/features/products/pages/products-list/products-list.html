@@ -1,163 +1,222 @@
-<main class="products-page">
- @if (actionError()) { <p role="alert">{{ actionError() }}</p> }
+<section class="page">
   <header class="page-heading">
     <div>
       <p class="eyebrow">INVENTORY</p>
       <h1>Products</h1>
-      <p class="page-description">Manage your products, prices, and stock levels.</p>
+      <p class="description">Manage your products, prices, and stock levels.</p>
     </div>
-    <button class="add-button" type="button" routerLink="/products/new">
-      <span aria-hidden="true">＋</span>
-      Add Product
-    </button>
+    <a mat-flat-button routerLink="/products/new"><mat-icon>add</mat-icon>Add Product</a>
   </header>
-
+  @if (actionError()) {
+    <p class="notice error" role="alert">{{ actionError() }}</p>
+  }
   <section class="summary-grid" aria-label="Product inventory summary">
-    <article class="summary-card">
-      <span class="summary-icon mint" aria-hidden="true">▦</span>
+    <mat-card appearance="outlined" class="summary-card"
+      ><span class="summary-icon mint"><mat-icon>inventory_2</mat-icon></span>
       <div>
         <p>Total products</p>
-        <strong>{{ totalCount() }}</strong><span class="summary-note">Across N categories</span>
-      </div>
-    </article>
-    <article class="summary-card">
-      <span class="summary-icon violet" aria-hidden="true">▤</span>
+        <strong>{{ analytics()?.inventory?.productCount ?? '—' }}</strong
+        ><span class="muted"
+          >{{ analytics()?.inventory?.categoryCount ?? '—' }}
+          {{ analytics()?.inventory?.categoryCount === 1 ? 'category' : 'categories' }}</span
+        >
+      </div></mat-card
+    >
+    <mat-card appearance="outlined" class="summary-card"
+      ><span class="summary-icon violet"><mat-icon>payments</mat-icon></span>
       <div>
         <p>Stock value</p>
-        <strong>{{ stockValue() }}</strong
-        ><span class="summary-note positive">↑ 12% <span>vs. last month</span></span>
-      </div>
-    </article>
-    <article class="summary-card">
-      <span class="summary-icon amber" aria-hidden="true">◈</span>
+        <strong>{{
+          analytics()
+            ? (analytics()!.inventory.inventoryValue | currency: analytics()!.currency)
+            : '—'
+        }}</strong
+        ><span class="muted">At selling price</span>
+      </div></mat-card
+    >
+    <mat-card appearance="outlined" class="summary-card"
+      ><span class="summary-icon amber"><mat-icon>warning_amber</mat-icon></span>
       <div>
         <p>Low stock</p>
-        <strong>{{ lowStockIds().length }}</strong><span class="summary-note warning">Needs attention</span>
-      </div>
-    </article>
-    <article class="summary-card">
-      <span class="summary-icon blue" aria-hidden="true">⌁</span>
+        <strong>{{ analytics()?.inventory?.lowStockCount ?? '—' }}</strong
+        ><span class="muted">Needs attention</span>
+      </div></mat-card
+    >
+    <mat-card appearance="outlined" class="summary-card"
+      ><span class="summary-icon blue"><mat-icon>remove_shopping_cart</mat-icon></span>
       <div>
         <p>Out of stock</p>
-        <strong>{{ outOfStockIds().length }}</strong><span class="summary-note">Review replenishment</span>
-      </div>
-    </article>
+        <strong>{{ analytics()?.inventory?.outOfStockCount ?? '—' }}</strong
+        ><span class="muted">Review replenishment</span>
+      </div></mat-card
+    >
   </section>
-
-  <section class="catalog-panel" aria-labelledby="catalog-title">
-    <div class="catalog-heading">
-      <div class="catalog-title-wrap">
-        <span class="catalog-icon" aria-hidden="true">▦</span>
+  @if (analyticsError()) {
+    <p class="notice" role="status">
+      Inventory summary unavailable.
+      <button mat-button (click)="loadAnalytics()">Retry summary</button>
+    </p>
+  }
+  <mat-card appearance="outlined" class="panel catalog-panel"
+    ><header class="catalog-heading">
+      <div class="actions">
+        <span class="summary-icon"><mat-icon>inventory</mat-icon></span>
         <div>
           <h2 id="catalog-title">Product catalog</h2>
-          <p>Browse and manage your inventory</p>
+          <p class="muted">Browse and manage your inventory</p>
         </div>
       </div>
-      <button class="text-button" type="button">Export <span aria-hidden="true">↗</span></button>
-    </div>
-
-    @if (categoriesFacade.status() === 'error') { <p role="alert">Unable to load categories.</p><button type="button" (click)="categoriesFacade.load()">Retry categories</button> }
-    <div class="toolbar" role="search">
-      <label class="search-box">
-        <span aria-hidden="true">⌕</span>
-        <input type="search" placeholder="Search products, SKU..." aria-label="Search products" [formControl]="searchControl"/>
-      </label>
-      <label class="select-wrap">
-        <span class="sr-only">Filter by category</span>
-        <select aria-label="Filter by category" (change)="categoryChanged($event)">
-          <option value="">All categories</option>
-          @for (category of categories(); track category.id) { <option [value]="category.id">{{ category.name }}</option> }
-        </select>
-      </label>
-      <label class="select-wrap sort-select">
-        <span class="sr-only">Sort products</span>
-        <select aria-label="Sort products" [value]="sortBy + '-' + sortOrder" (change)="onSortChange($event)">
-          <option value="name-asc">Name (A–Z)</option>
-          <option value="name-desc">Name (Z–A)</option>
-          <option value="price-asc">Price: low to high</option>
-          <option value="price-desc">Price: high to low</option>
-          <option value="stock-asc">Stock: low to high</option>
-          <option value="stock-desc">Stock: high to low</option>
-        </select>
-      </label>
-      <button class="filter-button" type="button">
-        <span aria-hidden="true">☷</span> Filters
+      <button
+        mat-button
+        [disabled]="isLoading() || !productsSignal().length"
+        (click)="exportProducts()"
+      >
+        <mat-icon>download</mat-icon>Export page
+      </button>
+    </header>
+    @if (categoriesFacade.status() === 'error') {
+      <p role="alert" class="notice error">
+        Unable to load categories.
+        <button mat-button (click)="categoriesFacade.load()">Retry categories</button>
+      </p>
+    }
+    <div class="toolbar" role="search" aria-label="Search and filter products">
+      <mat-form-field appearance="outline" class="search"
+        ><mat-label>Search products, SKU</mat-label><mat-icon matPrefix>search</mat-icon
+        ><input matInput type="search" [formControl]="searchControl"
+      /></mat-form-field>
+      <div id="catalog-filters" class="filters" [hidden]="!filtersOpen()">
+        <mat-form-field appearance="outline"
+          ><mat-label>Category</mat-label
+          ><mat-select
+            [value]="query().categoryId"
+            (selectionChange)="categoryChanged($event.value)"
+            ><mat-option [value]="undefined">All categories</mat-option>
+            @for (category of categories(); track category.id) {
+              <mat-option [value]="category.id">{{ category.name }}</mat-option>
+            }
+          </mat-select></mat-form-field
+        ><mat-form-field appearance="outline"
+          ><mat-label>Sort products</mat-label
+          ><mat-select
+            [value]="query().sortBy + '-' + query().sortOrder"
+            (selectionChange)="onSortChange($event.value)"
+            ><mat-option value="name-asc">Name (A–Z)</mat-option
+            ><mat-option value="name-desc">Name (Z–A)</mat-option
+            ><mat-option value="price-asc">Price: low to high</mat-option
+            ><mat-option value="price-desc">Price: high to low</mat-option
+            ><mat-option value="stock-asc">Stock: low to high</mat-option
+            ><mat-option value="stock-desc">Stock: high to low</mat-option></mat-select
+          ></mat-form-field
+        >
+      </div>
+      <button
+        mat-stroked-button
+        [attr.aria-expanded]="filtersOpen()"
+        aria-controls="catalog-filters"
+        (click)="filtersOpen.update((v) => !v)"
+      >
+        <mat-icon>tune</mat-icon>Filters
       </button>
     </div>
-
     <div class="results-line">
-      <span>Showing <strong>{{ productsSignal().length }}</strong> of <strong>{{ totalCount() }}</strong> products</span
-      ><span class="view-toggle" role="group" aria-label="Product view">
-        <button type="button" aria-label="Grid view" [attr.aria-pressed]="viewMode() === 'grid'" (click)="setViewMode('grid')">▦</button>
-        <button type="button" aria-label="Table view" [attr.aria-pressed]="viewMode() === 'table'" (click)="setViewMode('table')">☰</button>
-      </span>
+      <p class="muted" aria-live="polite">
+        Showing {{ productsSignal().length }} of {{ totalCount() }} products
+      </p>
+      <mat-button-toggle-group
+        aria-label="Product view"
+        [value]="viewMode()"
+        (change)="setViewMode($event.value)"
+        ><mat-button-toggle value="grid" aria-label="Grid view"
+          ><mat-icon>grid_view</mat-icon></mat-button-toggle
+        ><mat-button-toggle value="table" aria-label="Table view"
+          ><mat-icon>view_list</mat-icon></mat-button-toggle
+        ></mat-button-toggle-group
+      >
     </div>
-
-    @if (viewMode() === 'table') {
-      <section [attr.aria-busy]="isLoading()">
-        @if (isLoading()) { <p role="status">Loading products…</p> }
-        <app-product-table [products]="productsSignal()" (deleteRequested)="deleteProduct($event)" />
-      </section>
-    } @else {
-    <div class="product-grid" [class.is-loading]="isLoading()" [class.has-products]="productsSignal().length > 0" [attr.aria-busy]="isLoading()">
-      @if (isLoading() && productsSignal().length === 0) {
-        <p class="loading-status" role="status">
-          <span class="loading-spinner" aria-hidden="true"></span>
-          Loading products…
+    <div [attr.aria-busy]="isLoading()">
+      @if (isLoading()) {
+        <mat-progress-bar mode="indeterminate" aria-label="Loading products" />
+        <p role="status">Loading products…</p>
+      }
+      @if (loadError()) {
+        <p class="notice error" role="alert">
+          Unable to load products. <button mat-button (click)="reload()">Retry products</button>
         </p>
-        @for (placeholder of [1, 2, 3, 4]; track placeholder) {
-          <article class="product-card skeleton-card" aria-hidden="true">
-            <div class="skeleton-visual"></div>
-            <div class="skeleton-info">
-              <span></span><span></span><span></span>
-            </div>
-          </article>
-        }
       }
-      @for (product of productsSignal(); track product.id) {
-        <article class="product-card">
-          <app-product-barcode [barcode]="product.barcode" [sku]="product.sku" />
-          <div class="barcode-card-actions">
-            @if (product.quantityInStock > 0 && product.quantityInStock >= product.minimumStockLevel) {
-              <span class="stock-badge in-stock"><i></i>In stock</span
-              >
-            } @else if (product.quantityInStock > 0 && product.quantityInStock < product.minimumStockLevel) {
-              <span class="stock-badge low-stock"><i></i>{{product.quantityInStock}} left in stock</span
-              >
-            } @else {
-              <span class="stock-badge out-stock"><i></i>Out of stock</span
-              >
-            }
-            <a [routerLink]="['/products', product.id, 'edit']">Edit {{ product.name }}</a>
-            <button type="button" [disabled]="deleting()" (click)="deleteProduct(product)">Delete {{ product.name }}</button>
-          </div>
-          <div class="product-info">
-            <span class="category">{{product.category.name}}</span>
-            <h3>{{ product.name }}</h3>
-            <p class="product-description thin-product-info">{{ product.description }}</p>
-            <p class="sku thin-product-info">SKU: {{ product.sku }}</p>
-            <div class="product-footer">
-              <strong>{{ product.price | currency }}</strong><span class="stock-count">◈ <b>{{ product.quantityInStock }}</b> pcs</span>
-            </div>
-          </div>
-        </article>
+      @if (viewMode() === 'table') {
+        <app-product-table
+          [products]="productsSignal()"
+          [deleting]="deleting()"
+          (deleteRequested)="deleteProduct($event)"
+        />
+      } @else {
+        <div class="product-grid">
+          @for (product of productsSignal(); track product.id) {
+            <mat-card appearance="outlined" class="product-card"
+              ><app-product-barcode
+                [barcode]="product.barcode"
+                [sku]="product.sku"
+              /><mat-card-content
+                ><span
+                  class="stock-badge"
+                  [class.low-stock]="
+                    product.quantityInStock > 0 &&
+                    product.quantityInStock < product.minimumStockLevel
+                  "
+                  [class.out-stock]="product.quantityInStock === 0"
+                  >{{
+                    product.quantityInStock === 0
+                      ? 'Out of stock'
+                      : product.quantityInStock < product.minimumStockLevel
+                        ? 'Low stock'
+                        : 'In stock'
+                  }}</span
+                >
+                <p class="category">{{ product.category.name }}</p>
+                <h3>
+                  <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
+                </h3>
+                <p class="product-description muted">
+                  {{ product.description || 'No description' }}
+                </p>
+                <p class="muted">SKU: {{ product.sku }}</p>
+                <div class="product-footer">
+                  <strong>{{ product.price | currency }}</strong
+                  ><span>{{ product.quantityInStock }} pcs</span>
+                </div></mat-card-content
+              ><mat-card-actions
+                ><a
+                  mat-button
+                  [routerLink]="['/products', product.id, 'edit']"
+                  [attr.aria-label]="'Edit ' + product.name"
+                  >Edit</a
+                ><button
+                  mat-button
+                  [disabled]="deleting()"
+                  [attr.aria-label]="'Delete ' + product.name"
+                  (click)="deleteProduct(product)"
+                >
+                  Delete
+                </button></mat-card-actions
+              ></mat-card
+            >
+          }
+        </div>
+      }
+      @if (!isLoading() && !loadError() && !productsSignal().length) {
+        <p class="empty" role="status">No products found. Try changing your search or filters.</p>
       }
     </div>
-
-    }
-    @if (!isLoading() && productsSignal().length === 0) { <p role="status">No products found</p> }
-    <nav class="pagination" aria-label="Product pages">
-      <button type="button" aria-label="Previous page" [disabled]="currentPage <= 1" (click)="loadPage(currentPage - 1)">‹</button>
-      @for (page of pageNumbers; track page) {
-        <button
-          type="button"
-          [class.current-page]="page === currentPage"
-          [attr.aria-current]="page === currentPage ? 'page' : null"
-          [attr.aria-label]="'Page ' + page"
-          (click)="loadPage(page)"
-        >{{ page }}</button>
-      }
-      <button type="button" aria-label="Next page" [disabled]="currentPage >= totalPages()" (click)="loadPage(currentPage + 1)">›</button>
-    </nav>
-  </section>
-</main>
+    <mat-paginator
+      aria-label="Product pages"
+      [length]="totalCount()"
+      [pageIndex]="currentPage() - 1"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[10, 20, 50]"
+      [disabled]="isLoading()"
+      showFirstLastButtons
+      (page)="pageChanged($event)"
+    />
+  </mat-card>
+</section>

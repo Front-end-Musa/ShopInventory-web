@@ -1,39 +1,216 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
-
 html {
   height: 100%;
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$green-palette,
       ),
-      typography: Roboto,
+      typography: "'Inter', 'Segoe UI', sans-serif",
       density: 0,
     )
   );
+  @include mat.theme-overrides(
+    (
+      primary: #087360,
+      on-primary: #ffffff,
+      primary-container: #dcf5eb,
+      on-primary-container: #075e4c,
+      surface: #ffffff,
+      on-surface: #17243b,
+      on-surface-variant: #536278,
+      outline: #738176,
+      outline-variant: #dce5e3,
+      surface-container: #f0f5f3,
+      surface-container-low: #f7faf9,
+    )
+  );
+  @include mat.card-overrides(
+    (
+      outlined-container-shape: 13px,
+      outlined-outline-color: #e0e7eb,
+      elevated-container-shape: 13px,
+    )
+  );
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 10px,
+      outlined-container-shape: 10px,
+      text-container-shape: 10px,
+    )
+  );
+  @include mat.form-field-overrides(
+    (
+      outlined-container-shape: 9px,
+    )
+  );
 }
-
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
-  height: 100%;
+  min-height: 100%;
+  color-scheme: light;
+  background: #f8fafb;
+  color: #17243b;
+  font:
+    14px/1.5 'Inter',
+    'Segoe UI',
+    sans-serif;
 }
-/* You can add global styles to this file, and also import other style files */
+* {
+  box-sizing: border-box;
+}
+a {
+  color: #087360;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+:focus-visible {
+  outline: 3px solid #087f6d;
+  outline-offset: 3px;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1 {
+  font-size: clamp(26px, 3vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+h2 {
+  font-size: 20px;
+  line-height: 1.35;
+}
+h3 {
+  font-size: 16px;
+}
+.page {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding: 30px clamp(18px, 3vw, 42px) 40px;
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.eyebrow {
+  color: #087360;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+.description,
+.muted {
+  color: #536278;
+}
+.description {
+  margin-bottom: 0;
+}
+.panel {
+  padding: 22px;
+  margin-bottom: 20px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+}
+.full-width {
+  grid-column: 1/-1;
+}
+.notice {
+  padding: 12px 16px;
+  background: #edf5f2;
+  border-radius: 9px;
+  margin-bottom: 16px;
+}
+.error {
+  color: #8c1d2c;
+  background: #fff0f1;
+}
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #075e4c;
+  background: #dcf5eb;
+}
+.stock-badge.low-stock {
+  color: #784400;
+  background: #fff0ce;
+}
+.stock-badge.out-stock {
+  color: #9b2233;
+  background: #ffe3e6;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+}
+caption {
+  text-align: left;
+  padding: 12px 0;
+  font-weight: 600;
+}
+mat-progress-bar {
+  margin-bottom: 16px;
+}
+.empty {
+  padding: 32px;
+  text-align: center;
+  color: #536278;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .page {
+    padding: 22px 15px 30px;
+  }
+  .page-heading {
+    flex-wrap: wrap;
+  }
+  .panel {
+    padding: 16px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

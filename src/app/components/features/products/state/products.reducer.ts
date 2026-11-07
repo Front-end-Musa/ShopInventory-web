@@ -28,7 +28,7 @@ export const initialState: State = adapter.getInitialState({
   totalPages: 0,
   query: {
     page: 1,
-    pageSize: 10,
+    pageSize: 20,
     sortBy: 'name',
     sortOrder: 'asc',
     searchInput: '',

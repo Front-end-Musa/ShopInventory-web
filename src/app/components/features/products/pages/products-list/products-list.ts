@@ -1,171 +1,166 @@
-import { ProductBarcode } from '../../components/product-barcode/product-barcode';
-import { MatDialog } from '@angular/material/dialog';
-import { DeleteConfirmation } from '../../../../shared/delete-confirmation';
-import { CategoriesFacade } from '../../../category/data-access/categories.facade';
-import { CategoryApiService } from '../../../category/data-access/category-api.service';
-import { Category } from '../../../category/data-access/category.models';
-import { ProductsApiService } from '../../data-access/products-api.service';
-import { effect, inject, afterNextRender, Component, DestroyRef, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ProductTable } from '../../components/product-table/product-table';
-import { ProductsFacade } from '../../state/products.facade';
-import { Product } from '../../data-access/products.models';
-import { debounceTime, distinctUntilChanged, Subscription } from 'rxjs';
+import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { SortByType, SortOrderType } from '../../data-access/products-sorting.types';
+import { RouterLink } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ProductBarcode } from '../../components/product-barcode/product-barcode';
+import { ProductTable } from '../../components/product-table/product-table';
+import { Product } from '../../data-access/products.models';
+import { ProductsApiService } from '../../data-access/products-api.service';
+import { ProductsFacade } from '../../state/products.facade';
+import { SortByType, SortOrderType } from '../../data-access/products-sorting.types';
+import { CategoriesFacade } from '../../../category/data-access/categories.facade';
+import { AnalyticsOverview, AnalyticsService } from '../../../dashboard/analytics.service';
+import { DeleteConfirmation } from '../../../../shared/delete-confirmation';
+import { PreferencesService } from '../../../../shared/preferences.service';
+import { productsCsv } from '../../../../shared/csv';
 @Component({
-  imports: [RouterLink, ProductBarcode, ProductTable, CurrencyPipe, MatIconModule, ReactiveFormsModule],
   selector: 'app-products-list',
-  styleUrl: './products-list.scss',
-  styles: [`
-    .barcode-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .75rem; border-top: 1px solid #e2e8f0; }
-    .barcode-card-actions .stock-badge { position: static; font-size: .75rem; }
-    .barcode-card-actions .low-stock { color: #784400; }
-    .barcode-card-actions .out-stock { color: #9b2233; }
-    .barcode-card-actions a, .barcode-card-actions button { display: inline-flex; align-items: center; min-height: 44px; padding: .5rem; color: #17243b; }
-    .barcode-card-actions a:focus-visible, .barcode-card-actions button:focus-visible { outline: 2px solid #2456a6; outline-offset: 2px; }
-  `],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonToggleModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
+    ProductBarcode,
+    ProductTable,
+  ],
   templateUrl: './products-list.html',
+  styleUrl: './products-list.scss',
 })
-export class ProductsList implements OnInit, OnDestroy {
+export class ProductsList {
+  readonly productsFacade = inject(ProductsFacade);
   readonly categoriesFacade = inject(CategoriesFacade);
-  readonly categories = this.categoriesFacade.categories;
-  readonly actionError = signal('');
-  readonly deleting = signal(false);
-  private readonly dialog = inject(MatDialog);
   private readonly api = inject(ProductsApiService);
-  private readonly categoriesApi = inject(CategoryApiService);
-  categoryChanged(event: Event): void {
-    this.currentPage = 1;
-    this.productsFacade.categoryChanged(Number((event.target as HTMLSelectElement).value) || undefined);
+  private readonly analyticsApi = inject(AnalyticsService);
+  private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly preferences = inject(PreferencesService);
+  readonly categories = this.categoriesFacade.categories;
+  readonly productsSignal = toSignal(this.productsFacade.products$, { initialValue: [] });
+  readonly totalCount = toSignal(this.productsFacade.totalCount$, { initialValue: 0 });
+  readonly isLoading = toSignal(this.productsFacade.isLoading$, { initialValue: false });
+  readonly loadError = toSignal(this.productsFacade.error$, { initialValue: null });
+  readonly query = this.productsFacade.query;
+  readonly currentPage = computed(() => this.query().page);
+  readonly pageSize = computed(() => this.query().pageSize);
+  readonly viewMode = signal<'grid' | 'table'>('grid');
+  readonly filtersOpen = signal(true);
+  readonly deleting = signal(false);
+  readonly actionError = signal('');
+  readonly analytics = signal<AnalyticsOverview | null>(null);
+  readonly analyticsError = signal(false);
+  readonly searchControl = new FormControl(this.query().searchInput, { nonNullable: true });
+  private preferencesApplied = false;
+  constructor() {
+    this.categoriesFacade.load();
+    this.loadAnalytics();
+    this.reload();
+    effect(() => {
+      if (this.preferences.ready() && !this.preferencesApplied) {
+        this.preferencesApplied = true;
+        this.viewMode.set(this.preferences.value().view);
+        this.productsFacade.loadProducts(1, this.preferences.value().pageSize);
+      }
+    });
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe((value) => this.productsFacade.searchChanged(value));
+  }
+  loadAnalytics(): void {
+    this.analyticsError.set(false);
+    this.analyticsApi
+      .overview()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (value) => this.analytics.set(value),
+        error: () => this.analyticsError.set(true),
+      });
+  }
+  reload(): void {
+    const q = this.query();
+    this.productsFacade.loadProducts(q.page, q.pageSize, q.sortBy as SortByType, q.sortOrder);
+  }
+  categoryChanged(categoryId: number | undefined): void {
+    this.productsFacade.categoryChanged(categoryId);
+  }
+  onSortChange(value: string): void {
+    const [sortBy, order] = value.split('-') as [SortByType, SortOrderType];
+    this.productsFacade.loadProducts(1, this.pageSize(), sortBy, order);
+  }
+  pageChanged(event: PageEvent): void {
+    const q = this.query();
+    this.productsFacade.loadProducts(
+      event.pageIndex + 1,
+      event.pageSize,
+      q.sortBy as SortByType,
+      q.sortOrder,
+    );
+  }
+  setViewMode(mode: 'grid' | 'table'): void {
+    this.viewMode.set(mode);
+    this.preferences.save({ ...this.preferences.value(), view: mode });
   }
   deleteProduct(product: Product): void {
     if (this.deleting()) return;
-    this.deleting.set(true);
-    this.dialog.open(DeleteConfirmation, { data: product.name, autoFocus: 'first-tabbable', restoreFocus: true }).afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
-      if (confirmed !== true) { this.deleting.set(false); return; }
-      this.performDelete(product);
-    });
+    this.dialog
+      .open(DeleteConfirmation, {
+        data: product.name,
+        restoreFocus: true,
+        autoFocus: 'first-tabbable',
+      })
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (confirmed !== true) return;
+        this.deleting.set(true);
+        this.actionError.set('');
+        this.api
+          .delete(product.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.deleting.set(false);
+              const q = this.query();
+              this.productsFacade.loadProducts(
+                this.productsSignal().length === 1 ? Math.max(1, q.page - 1) : q.page,
+                q.pageSize,
+                q.sortBy as SortByType,
+                q.sortOrder,
+              );
+              this.loadAnalytics();
+            },
+            error: () => {
+              this.deleting.set(false);
+              this.actionError.set('Unable to delete product. Please try again.');
+            },
+          });
+      });
   }
-  private performDelete(product: Product): void {
-    this.api.delete(product.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.deleting.set(false); if (this.productsSignal().length === 1 && this.currentPage > 1) this.currentPage--; this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder); },
-      error: () => { this.deleting.set(false); this.actionError.set('Unable to delete product. Please try again.'); },
-    });
-  }
-  readonly viewMode = signal<'grid' | 'table'>('grid');
-
-  setViewMode(mode: 'grid' | 'table'): void {
-    this.viewMode.set(mode);
-    try { localStorage.setItem('shopInventory.products.viewMode', mode); } catch { /* Storage may be unavailable. */ }
-  }
-
-  private productsSubscription: Subscription | null = null;
-  private totalPagesSubscription: Subscription | null = null;
-  private totalCountSubscription: Subscription | null = null;
-  private loadingSubscription: Subscription | null = null;
-  public productsSignal: WritableSignal<Product[]> = signal<Product[]>([]);
-  public totalPages: WritableSignal<number> = signal<number>(0);
-  public totalCount: WritableSignal<number> = signal<number>(0);
-  public isLoading: WritableSignal<boolean> = signal(false);
-  public currentPage = 1;
-  public pageSize = 20;
-  public sortOrder: SortOrderType = 'asc';
-  public sortBy: SortByType = 'name';
-  searchControl = new FormControl('', {
-    nonNullable: true
-  });
-  constructor(private productsFacade: ProductsFacade, private destroyRef: DestroyRef) {
-    effect(() => { this.currentPage = this.productsFacade.query().page; });
-    afterNextRender(() => {
-      try {
-        const saved = localStorage.getItem('shopInventory.products.viewMode');
-        if (saved === 'grid' || saved === 'table') this.viewMode.set(saved);
-      } catch { /* Keep the default when storage is unavailable. */ }
-    });
-  }
-
-  ngOnInit(): void {
-    this.categoriesFacade.load();
-    this.productsSubscription = this.productsFacade.products$.subscribe((products) => {
-      this.productsSignal.set(products);
-    });
-    this.totalPagesSubscription = this.productsFacade.totalPages$.subscribe((totalPages) => {
-      this.totalPages.set(totalPages);
-    });
-    this.totalCountSubscription = this.productsFacade.totalCount$.subscribe((totalCount) => {
-      this.totalCount.set(totalCount);
-    });
-    this.loadingSubscription = this.productsFacade.isLoading$.subscribe((isLoading) => {
-      this.isLoading.set(isLoading);
-    });
-    this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder);
-    
-    this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(searchInput => this.productsFacade.searchChanged(searchInput))
-  }
-
-  ngOnDestroy(): void {
-    this.productsSubscription?.unsubscribe();
-    this.totalPagesSubscription?.unsubscribe();
-    this.totalCountSubscription?.unsubscribe();
-    this.loadingSubscription?.unsubscribe();
-  }
-
-  get pageNumbers(): number[] {
-    return Array.from({ length: this.totalPages() }, (_, index) => index + 1);
-  }
-
-  loadPage(page: number): void {
-    if (page < 1 || (this.totalPages() > 0 && page > this.totalPages()) || page === this.currentPage) {
-      return;
-    }
-
-    this.currentPage = page;
-    this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder);
-  }
-
-  onSortChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    const [sortBy, sortOrder] = value.split('-') as [SortByType, SortOrderType];
-    this.sortBy = sortBy;
-    this.sortOrder = sortOrder;
-    this.currentPage = 1;
-    this.productsFacade.loadProducts(this.currentPage, this.pageSize, this.sortBy, this.sortOrder);
-  }
-
-  stockValue(): number {
-    let totalValue: number = 0;
-    this.productsSignal().forEach(product => {
-      totalValue += product.price;
-    });
-    return totalValue;
-  }
-
-  lowStockIds(): number[] {
-    let lowStockIds: number[] = [];
-    this.productsSignal().forEach((product) => {
-      if (product.quantityInStock < product.minimumStockLevel) {
-        lowStockIds.push(product.id);
-      };
-    });
-    return lowStockIds;
-  }
-
-  outOfStockIds(): number[] {
-    let outOfStockIds: number[] = [];
-    this.productsSignal().forEach((product) => {
-      if (product.quantityInStock == 0) {
-        outOfStockIds.push(product.id);
-      };
-    });
-    return outOfStockIds;
+  exportProducts(): void {
+    const url = URL.createObjectURL(
+      new Blob([productsCsv(this.productsSignal())], { type: 'text/csv;charset=utf-8' }),
+    );
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'products-page-' + this.currentPage() + '.csv';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }

@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:ShopInventory-frontend": "node dist/ShopInventory-frontend/server/server.mjs"
+    "serve:ssr:ShopInventory-frontend": "node dist/ShopInventory-frontend/server/server.mjs",
+    "test:ui": "node scripts/verify-ui.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.1",
@@ -36,10 +37,12 @@
     "@angular/build": "^22.2.2",
     "@angular/cli": "^22.2.2",
     "@angular/compiler-cli": "^22.2.0",
+    "@axe-core/playwright": "^4.14.0",
     "@ngrx/schematics": "^22.0.1",
     "@types/express": "^5.0.1",
     "@types/node": "^22.12.0",
     "jsdom": "^30.0.0",
+    "playwright": "^1.65.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "vitest": "^5.0.0"

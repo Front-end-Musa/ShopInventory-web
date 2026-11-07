@@ -1,13 +1,8 @@
 import { Routes } from '@angular/router';
-import { provideEffects } from '@ngrx/effects';
-import { provideState } from '@ngrx/store';
-import { ProductsEffects } from './state/products.effects';
-import { productsFeature } from './state/products.reducer';
 
 export const PRODUCTS_ROUTES: Routes = [
   {
     path: '',
-    providers: [provideState(productsFeature), provideEffects(ProductsEffects)],
     children: [
       {
         path: '',

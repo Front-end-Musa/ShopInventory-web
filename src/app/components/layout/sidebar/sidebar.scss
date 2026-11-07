@@ -69,55 +69,6 @@
   font-size: 10px;
 }
 
-.primary-nav {
-  display: grid;
-  gap: 7px;
-}
-.nav-link,
-.settings-link {
-  display: flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 13px;
-  border-radius: 10px;
-  padding: 0 12px;
-  color: #35445d;
-  font-size: 12px;
-  text-decoration: none;
-  transition:
-    color 0.16s ease,
-    background 0.16s ease;
-}
-.nav-link:hover,
-.settings-link:hover {
-  color: #087f6d;
-  background: #f3f8f6;
-}
-.nav-link.active {
-  color: #087f6d;
-  background: #e5f4ef;
-  font-weight: 650;
-}
-.nav-icon {
-  display: grid;
-  width: 20px;
-  place-items: center;
-  color: #30425d;
-  font-size: 20px;
-  line-height: 1;
-}
-.nav-link.active .nav-icon {
-  color: #087f6d;
-}
-.settings-link {
-  margin-top: auto;
-  margin-bottom: 20px;
-}
-.settings-link.active {
-  color: #087f6d;
-  background: #e5f4ef;
-}
-
 .sidebar-promo {
   position: relative;
   display: flex;
@@ -198,55 +149,53 @@
   background: #dcf4eb;
 }
 
-@media (max-width: 900px) {
-  :host {
-    flex-basis: 205px;
-  }
-  .sidebar {
-    padding-inline: 12px;
-  }
-  .sidebar-promo {
-    min-height: 200px;
-  }
+:host {
+  display: block;
+  min-width: 0;
+}
+.sidebar {
+  min-height: 100vh;
+  height: auto;
+  border: 0;
+}
+.sidebar-promo {
+  margin-top: auto;
+}
+mat-nav-list {
+  margin-bottom: 24px;
+}
+.brand-copy small {
+  color: #536278;
+}
+.promo-content p {
+  font-size: 12px;
+}
+.promo-label {
+  font-size: 10px;
+}
+.promo-content button {
+  width: 44px;
+  height: 44px;
+  background: white;
+}
+.compact {
+  min-height: 0;
+  padding: 12px;
+}
+.compact .brand {
+  margin: 0 0 8px;
+}
+.compact mat-nav-list {
+  display: flex;
+  overflow-x: auto;
+  margin: 0;
+}
+.compact a[mat-list-item] {
+  flex: 0 0 auto;
+  width: auto;
 }
 @media (max-width: 650px) {
-  :host {
-    flex: 0 0 auto;
-  }
   .sidebar {
-    position: relative;
-    z-index: 2;
-    height: auto;
     min-height: 0;
-    padding: 12px 14px;
-    border-right: 0;
-    border-bottom: 1px solid #edf0f2;
-  }
-  .brand {
-    margin: 0 1px 12px;
-  }
-  .primary-nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-    scrollbar-width: none;
-  }
-  .primary-nav::-webkit-scrollbar {
-    display: none;
-  }
-  .nav-link {
-    min-height: 36px;
-    flex: 0 0 auto;
-    gap: 7px;
-    padding: 0 10px;
-    font-size: 11px;
-  }
-  .nav-icon {
-    width: 16px;
-    font-size: 16px;
-  }
-  .settings-link,
-  .sidebar-promo {
-    display: none;
   }
 }

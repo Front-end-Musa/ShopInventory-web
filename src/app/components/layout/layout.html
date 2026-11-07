@@ -1,6 +1,8 @@
-<div class="layout">
-  <app-sidebar></app-sidebar>
-  <main class="main">
-    <router-outlet></router-outlet>
-  </main>
-</div>
+<a class="skip-link" href="#page-content">Skip to content</a>
+<mat-sidenav-container class="layout">
+  <mat-sidenav mode="side" opened><app-sidebar /></mat-sidenav>
+  <mat-sidenav-content>
+    <div class="mobile-navigation"><app-sidebar [compact]="true" /></div>
+    <main id="page-content" tabindex="-1"><router-outlet /></main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

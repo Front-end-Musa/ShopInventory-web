@@ -1,1 +1,66 @@
-<p>product-details works!</p>
+<section class="page">
+  <a mat-button routerLink="/products">Back to products</a>
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">INVENTORY</p>
+      <h1>{{ product()?.name || 'Product details' }}</h1>
+    </div>
+    @if (product(); as p) {
+      <div class="actions">
+        <a mat-flat-button [routerLink]="['/products', p.id, 'edit']">Edit product</a
+        ><button mat-stroked-button [disabled]="deleting()" (click)="deleteProduct()">
+          Delete product
+        </button>
+      </div>
+    }
+  </header>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading product" />
+    <p role="status">Loading product…</p>
+  }
+  @if (error()) {
+    <div class="notice error" role="alert">
+      {{ error() }} <button mat-button (click)="load()">Retry</button>
+    </div>
+  }
+  @if (product(); as p) {
+    <mat-card appearance="outlined" class="panel"
+      ><div class="details-grid">
+        <app-product-barcode [barcode]="p.barcode" [sku]="p.sku" />
+        <div>
+          <h2>Product information</h2>
+          <p>{{ p.description || 'No description provided.' }}</p>
+          <dl>
+            <dt>SKU</dt>
+            <dd>{{ p.sku }}</dd>
+            <dt>Category</dt>
+            <dd>{{ p.category.name }}</dd>
+            <dt>Price</dt>
+            <dd>{{ p.price | currency }}</dd>
+            <dt>Cost price</dt>
+            <dd>{{ p.costPrice | currency }}</dd>
+            <dt>Quantity in stock</dt>
+            <dd>{{ p.quantityInStock }}</dd>
+            <dt>Minimum stock level</dt>
+            <dd>{{ p.minimumStockLevel }}</dd>
+            <dt>Stock status</dt>
+            <dd>
+              <span
+                class="stock-badge"
+                [class.out-stock]="p.quantityInStock === 0"
+                [class.low-stock]="p.quantityInStock > 0 && p.quantityInStock < p.minimumStockLevel"
+                >{{
+                  p.quantityInStock === 0
+                    ? 'Out of stock'
+                    : p.quantityInStock < p.minimumStockLevel
+                      ? 'Low stock'
+                      : 'In stock'
+                }}</span
+              >
+            </dd>
+          </dl>
+        </div>
+      </div></mat-card
+    >
+  }
+</section>

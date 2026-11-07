@@ -1,0 +1,151 @@
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">YOUR SHOP AT A GLANCE</p>
+      <h1>Dashboard</h1>
+      <p class="description">Inventory health and business performance.</p>
+    </div>
+    <div class="actions">
+      <mat-form-field appearance="outline"
+        ><mat-label>Reporting period</mat-label
+        ><mat-select [value]="days()" (selectionChange)="load($event.value)">
+          @for (range of [7, 30, 90]; track range) {
+            <mat-option [value]="range">Last {{ range }} days</mat-option>
+          }
+        </mat-select></mat-form-field
+      ><button mat-stroked-button [disabled]="loading()" (click)="load()">Refresh</button>
+    </div>
+  </header>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Loading analytics" />
+    <p role="status">Loading analytics…</p>
+  }
+  @if (error()) {
+    <p class="notice error" role="alert">
+      Analytics could not be loaded. <button mat-button (click)="load()">Retry analytics</button>
+    </p>
+  }
+  @if (overview(); as data) {
+    <p class="muted">
+      {{ data.startDate }} – {{ data.endDate }} · {{ data.timezone }} · Updated
+      {{ data.generatedAt | date: 'short' }}
+    </p>
+    <div class="metrics">
+      <mat-card appearance="outlined" class="metric"
+        ><p>Total products</p>
+        <strong>{{ data.inventory.productCount }}</strong></mat-card
+      ><mat-card appearance="outlined" class="metric"
+        ><p>Stock value</p>
+        <strong>{{ data.inventory.inventoryValue | currency: data.currency }}</strong
+        ><span class="muted">At selling price</span></mat-card
+      ><mat-card appearance="outlined" class="metric"
+        ><p>Net sales revenue</p>
+        <strong>{{
+          data.sales.revenue === null
+            ? 'Unavailable'
+            : (data.sales.revenue | currency: data.currency)
+        }}</strong></mat-card
+      ><mat-card appearance="outlined" class="metric"
+        ><p>Units sold</p>
+        <strong>{{ data.sales.unitsSold ?? 'Unavailable' }}</strong></mat-card
+      >
+    </div>
+    @if (!data.availability.sales) {
+      <p class="notice" role="status">
+        {{
+          data.availability.salesReason ||
+            'Sales analytics is unavailable until a sales source is connected.'
+        }}
+      </p>
+    }
+    @if (!data.availability.history) {
+      <p class="notice" role="status">
+        Inventory history is being collected. Historical days without snapshots are shown as
+        unavailable.
+      </p>
+    }
+    <div class="charts">
+      <mat-card appearance="outlined" class="panel"
+        ><app-trend-chart
+          title="Inventory value over time"
+          [unit]="data.currency"
+          [days]="data.daily"
+          metric="inventoryValue" /></mat-card
+      ><mat-card appearance="outlined" class="panel"
+        ><app-trend-chart
+          title="Net sales revenue over time"
+          [unit]="data.currency"
+          [days]="data.daily"
+          metric="revenue"
+      /></mat-card>
+    </div>
+    <div class="charts">
+      <mat-card appearance="outlined" class="panel"
+        ><h2>Stock distribution</h2>
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">
+              Stock distribution
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Status</th>
+                <th scope="col">Products</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of stockRows(); track row.label) {
+                <tr>
+                  <th scope="row">{{ row.label }}</th>
+                  <td>{{ row.count }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div></mat-card
+      ><mat-card appearance="outlined" class="panel"
+        ><h2>Low stock and replenishment</h2>
+        @for (product of data.lowStockProducts; track product.id) {
+          <p>
+            <a [routerLink]="['/products', product.id]">{{ product.name }}</a> ·
+            {{ product.quantityInStock }} available / minimum {{ product.minimumStockLevel }}
+          </p>
+        } @empty {
+          <p>No products need replenishment.</p>
+        }
+      </mat-card>
+    </div>
+    <mat-card appearance="outlined" class="panel"
+      ><h2>Category breakdown</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Category analytics">
+        <table>
+          <caption class="sr-only">
+            Current inventory by category
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col">Products</th>
+              <th scope="col">Units</th>
+              <th scope="col">Stock value</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (category of data.categories; track category.id) {
+              <tr>
+                <th scope="row">{{ category.name }}</th>
+                <td>{{ category.productCount }}</td>
+                <td>{{ category.quantity }}</td>
+                <td>{{ category.inventoryValue | currency: data.currency }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">No categories found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div></mat-card
+    >
+  }
+</section>

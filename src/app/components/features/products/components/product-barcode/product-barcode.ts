@@ -6,7 +6,7 @@ import JsBarcode from 'jsbarcode';
   template: `
     <figure>
       @if (encoding(); as code) {
-        <div class="barcode-scroll" tabindex="0" role="region" aria-label="Scrollable product barcode">
+        <div class="barcode-scroll" tabindex="0" role="region" [attr.aria-label]="'Product barcode: ' + sku()">
           <svg role="img" [attr.aria-label]="'Code 128 barcode: ' + value()"
             [attr.viewBox]="'0 0 ' + code.width + ' 64'" [attr.width]="code.width * 1.5" height="96">
             <rect width="100%" height="100%" fill="#fff" />

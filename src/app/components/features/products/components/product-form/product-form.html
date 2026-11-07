@@ -1,41 +1,130 @@
-<main>
+<section class="page">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">INVENTORY</p>
+      <h1>{{ isCreate ? 'Add Product' : 'Edit product' }}</h1>
+      <p class="description">Product information, pricing, and stock levels.</p>
+    </div>
+  </header>
   @if (isCreate || editLoaded()) {
-    <h1>{{ isCreate ? 'Add Product' : 'Edit product' }}</h1>
-    @if (editStatus() === 'error') { <p role="alert">Unable to save product. Try again.</p> }
-    <form (submit)="submit($event)">
-      <label>Name <input [formField]="fields.name" /></label>
-      <label>SKU <input [formField]="fields.sku" /></label>
-      <label>Barcode <input [formField]="fields.barcode" /></label>
-      <label>Description <textarea [formField]="fields.description"></textarea></label>
-      <label>Price <input type="number" step="any" [formField]="fields.price" /></label>
-      <label>Cost price <input type="number" step="any" [formField]="fields.costPrice" /></label>
-      <label>Category
-        <select [value]="value().categoryId" (change)="selectCategory($event)">
-          <option [value]="0">Select a category</option>
-          @for (category of categories(); track category.id) {
-            <option [value]="category.id">{{ category.name }}</option>
-          }
-        </select>
-      </label>
-      @if (categoryStatus() === 'loading') { <p role="status">Loading categories…</p> }
-      @if (categoryStatus() === 'error') {
-        <p role="alert">Categories could not be loaded.</p>
-        <button type="button" (click)="loadCategories()">Retry</button>
+    <mat-card appearance="outlined" class="panel">
+      @if (editStatus() === 'error' || facade.creationStatus() === 'error') {
+        <p class="notice error" role="alert">
+          Unable to save product. Check the values and try again.
+        </p>
       }
-      @if (categoryStatus() === 'loaded' && categories().length === 0) {
-        <p role="status">A category must exist before adding a product.</p>
-      }
-      <label>Quantity in stock <input type="number" step="1" [formField]="fields.quantityInStock" /></label>
-      <label>Minimum stock level <input type="number" step="1" [formField]="fields.minimumStockLevel" /></label>
-      @if (submitted()) {
-        <p role="status">Name and SKU are required. Price must be at least 0.01. Cost and whole-number stock levels must be nonnegative. Select an available category.</p>
-      }
-      @if (facade.creationStatus() === 'error') { <p role="alert">Unable to save the product. Check the values and try again.</p> }
-      @if (facade.creationStatus() === 'saving') { <p role="status">Saving product…</p> }
-      <button type="submit" [disabled]="editStatus() === 'saving' || facade.creationStatus() === 'saving' || categoryStatus() !== 'loaded' || categories().length === 0">Save product</button>
-      <a routerLink="/products">Cancel</a>
-    </form>
+      <form (submit)="submit($event)" novalidate>
+        <div class="form-grid">
+          <mat-form-field appearance="outline"
+            ><mat-label>Name</mat-label><input matInput type="text" [formField]="fields.name" />
+            @if (fields.name().invalid()) {
+              <mat-error>Name is required.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>SKU</mat-label><input matInput type="text" [formField]="fields.sku" />
+            @if (fields.sku().invalid()) {
+              <mat-error>SKU is required.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Barcode</mat-label
+            ><input matInput type="text" [formField]="fields.barcode" />
+            @if (fields.barcode().invalid()) {
+              <mat-error>Barcode must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline" class="full-width"
+            ><mat-label>Description</mat-label
+            ><textarea matInput rows="3" [formField]="fields.description"></textarea>
+            @if (fields.description().invalid()) {
+              <mat-error>Description must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Price</mat-label
+            ><input matInput type="number" step="0.01" [formField]="fields.price" />
+            @if (fields.price().invalid()) {
+              <mat-error>Price must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Cost price</mat-label
+            ><input matInput type="number" step="0.01" [formField]="fields.costPrice" />
+            @if (fields.costPrice().invalid()) {
+              <mat-error>Cost price must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Quantity in stock</mat-label
+            ><input matInput type="number" step="1" [formField]="fields.quantityInStock" />
+            @if (fields.quantityInStock().invalid()) {
+              <mat-error>Quantity in stock must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Minimum stock level</mat-label
+            ><input matInput type="number" step="1" [formField]="fields.minimumStockLevel" />
+            @if (fields.minimumStockLevel().invalid()) {
+              <mat-error>Minimum stock level must have a valid value.</mat-error>
+            }</mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Category</mat-label
+            ><mat-select
+              [value]="value().categoryId"
+              [attr.aria-invalid]="submitted() && !value().categoryId"
+              (selectionChange)="selectCategory($event.value)"
+            >
+              @for (category of categories(); track category.id) {
+                <mat-option [value]="category.id">{{ category.name }}</mat-option>
+              }</mat-select
+            ><mat-hint>Select an existing category.</mat-hint></mat-form-field
+          >
+        </div>
+        @if (categoryStatus() === 'loading') {
+          <p role="status">Loading categories…</p>
+        }
+        @if (categoryStatus() === 'error') {
+          <p class="notice error" role="alert">
+            Categories could not be loaded.
+            <button mat-button type="button" (click)="loadCategories()">Retry</button>
+          </p>
+        }
+        @if (categoryStatus() === 'loaded' && !categories().length) {
+          <p role="status">
+            A category must exist before adding a product.
+            <a mat-button routerLink="/categories">Manage categories</a>
+          </p>
+        }
+        @if (submitted()) {
+          <p role="status">
+            Name and SKU are required. Price must be at least 0.01. Cost and whole-number stock
+            levels must be nonnegative. Select an available category.
+          </p>
+        }
+        @if (editStatus() === 'saving' || facade.creationStatus() === 'saving') {
+          <mat-progress-bar mode="indeterminate" aria-label="Saving product" />
+          <p role="status">Saving product…</p>
+        }
+        <div class="actions">
+          <button
+            mat-flat-button
+            type="submit"
+            [disabled]="
+              editStatus() === 'saving' ||
+              facade.creationStatus() === 'saving' ||
+              categoryStatus() !== 'loaded' ||
+              !categories().length
+            "
+          >
+            Save product</button
+          ><a mat-button routerLink="/products">Cancel</a>
+        </div>
+      </form></mat-card
+    >
   } @else {
-    <h1>Edit product</h1><p>{{ editStatus() === 'error' ? 'Unable to load this product.' : 'Loading product…' }}</p><a routerLink="/products">Back to products</a>
+    @if (editStatus() === 'error') {
+      <p class="notice error" role="alert">
+        Unable to load this product.
+        <button mat-button (click)="loadProduct()">Retry product</button>
+      </p>
+    } @else {
+      <mat-progress-bar mode="indeterminate" aria-label="Loading product" />
+      <p role="status">Loading product…</p>
+    }
+    <a mat-button routerLink="/products">Back to products</a>
   }
-</main>
+</section>

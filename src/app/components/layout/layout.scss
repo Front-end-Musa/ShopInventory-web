@@ -1,21 +1,46 @@
 :host {
   display: block;
   min-height: 100vh;
+}
+.layout {
+  min-height: 100vh;
   background: #f8fafb;
 }
-
-.layout {
-  display: flex;
+mat-sidenav {
+  width: 236px;
+  border-right: 1px solid #edf0f2;
+  border-radius: 0;
+}
+mat-sidenav-content {
   min-height: 100vh;
 }
-
-.main {
-  min-width: 0;
-  flex: 1;
+.mobile-navigation {
+  display: none;
 }
-
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 12px;
+  z-index: 100;
+  background: white;
+  padding: 12px;
+}
+.skip-link:focus {
+  top: 8px;
+}
+@media (max-width: 900px) {
+  mat-sidenav {
+    width: 205px;
+  }
+}
 @media (max-width: 650px) {
-  .layout {
-    flex-direction: column;
+  mat-sidenav {
+    display: none;
+  }
+  mat-sidenav-content {
+    margin-left: 0 !important;
+  }
+  .mobile-navigation {
+    display: block;
   }
 }

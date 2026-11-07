@@ -1,15 +1,66 @@
-<div class="table-scroll" tabindex="0" role="region" aria-label="Product table">
-  <table>
-    <caption>Product inventory</caption>
-    <thead><tr><th scope="col">Name</th><th scope="col">SKU</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Quantity</th><th scope="col">Stock status</th><th scope="col">Actions</th></tr></thead>
-    <tbody>
-      @for (product of products(); track product.id) {
-        <tr><th scope="row">{{ product.name }}</th><td>{{ product.sku }}</td><td>{{ product.category.name }}</td><td>{{ product.price | currency }}</td><td>{{ product.quantityInStock }}</td><td>
-          @if (product.quantityInStock === 0) { Out of stock }
-          @else if (product.quantityInStock < product.minimumStockLevel) { Low stock }
-          @else { In stock }
-        </td><td><a [routerLink]="['/products', product.id, 'edit']">Edit {{ product.name }}</a><button type="button" (click)="deleteRequested.emit(product)">Delete {{ product.name }}</button></td></tr>
-      }
-    </tbody>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Product inventory table">
+  <table mat-table [dataSource]="products()">
+    <caption>
+      Product inventory
+    </caption>
+    <ng-container matColumnDef="name"
+      ><th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let p">
+        <a [routerLink]="['/products', p.id]">{{ p.name }}</a>
+      </td></ng-container
+    >
+    <ng-container matColumnDef="sku"
+      ><th mat-header-cell *matHeaderCellDef>SKU</th>
+      <td mat-cell *matCellDef="let p">{{ p.sku }}</td></ng-container
+    >
+    <ng-container matColumnDef="category"
+      ><th mat-header-cell *matHeaderCellDef>Category</th>
+      <td mat-cell *matCellDef="let p">{{ p.category.name }}</td></ng-container
+    >
+    <ng-container matColumnDef="price"
+      ><th mat-header-cell *matHeaderCellDef>Price</th>
+      <td mat-cell *matCellDef="let p">{{ p.price | currency }}</td></ng-container
+    >
+    <ng-container matColumnDef="quantity"
+      ><th mat-header-cell *matHeaderCellDef>Quantity</th>
+      <td mat-cell *matCellDef="let p">{{ p.quantityInStock }}</td></ng-container
+    >
+    <ng-container matColumnDef="status"
+      ><th mat-header-cell *matHeaderCellDef>Stock status</th>
+      <td mat-cell *matCellDef="let p">
+        <span
+          class="stock-badge"
+          [class.out-stock]="p.quantityInStock === 0"
+          [class.low-stock]="p.quantityInStock > 0 && p.quantityInStock < p.minimumStockLevel"
+          >{{
+            p.quantityInStock === 0
+              ? 'Out of stock'
+              : p.quantityInStock < p.minimumStockLevel
+                ? 'Low stock'
+                : 'In stock'
+          }}</span
+        >
+      </td></ng-container
+    >
+    <ng-container matColumnDef="actions"
+      ><th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let p">
+        <a
+          mat-button
+          [routerLink]="['/products', p.id, 'edit']"
+          [attr.aria-label]="'Edit ' + p.name"
+          >Edit</a
+        ><button
+          mat-button
+          [disabled]="deleting()"
+          [attr.aria-label]="'Delete ' + p.name"
+          (click)="deleteRequested.emit(p)"
+        >
+          Delete
+        </button>
+      </td></ng-container
+    >
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns"></tr>
   </table>
 </div>

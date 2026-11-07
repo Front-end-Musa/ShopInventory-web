@@ -1,9 +1,9 @@
-:host { display: block; color: #17243b; }
-main { max-width: 720px; margin: auto; padding: 30px 24px; }
-form { display: grid; gap: 18px; padding: 24px; background: white; border: 1px solid #d1d9e2; border-radius: 12px; }
-label { display: grid; gap: 6px; font-weight: 600; }
-input, textarea, select, button { font: inherit; padding: 10px; border: 1px solid #617088; border-radius: 6px; }
-button { background: #087d62; color: white; cursor: pointer; }
-button:disabled { opacity: .65; cursor: default; }
-a { color: #075e4c; }
-:focus-visible { outline: 3px solid #087d62; outline-offset: 3px; }
+:host {
+  display: block;
+}
+.panel {
+  max-width: 960px;
+}
+textarea {
+  resize: vertical;
+}
